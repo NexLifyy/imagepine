@@ -618,6 +618,7 @@ export default function GenerateMetadataPage() {
   const [descriptionLength, setDescriptionLength] = useState(250);
   const [keywordFormat, setKeywordFormat] = useState('Auto');
   const [keywordLength, setKeywordLength] = useState(20);
+  const [batchDelay, setBatchDelay] = useState(5); // default 5 seconds
   const [includeKeywords, setIncludeKeywords] = useState('');
   const [excludeKeywords, setExcludeKeywords] = useState('');
 
@@ -971,10 +972,10 @@ export default function GenerateMetadataPage() {
 
         addLog(`Successfully processed ${file.name} using ${modelUsed} (Key ${keyUsedIndex + 1})`, "success");
 
-        // 5s inter-image delay to stay within Groq free tier TPM limits
+        // Customizable inter-image delay to stay within Groq free tier TPM limits
         const isLastFile = pendingFiles.indexOf(file) === pendingFiles.length - 1;
         if (!isLastFile && isGeneratingRef.current) {
-          await new Promise(r => setTimeout(r, 5000));
+          await new Promise(r => setTimeout(r, batchDelay * 1000));
         }
       } catch (err) {
         console.error(err);
@@ -1994,6 +1995,25 @@ export default function GenerateMetadataPage() {
                       onChange={(e) => setKeywordLength(parseInt(e.target.value, 10))} 
                       style={{ width: '100%' }}
                     />
+                  </div>
+
+                  {/* Batch Request Delay Slider */}
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <label style={{ fontSize: 11, fontWeight: 700, color: '#6B6B8A' }}>Batch Request Delay</label>
+                      <span style={{ fontSize: 12, fontWeight: 800, color: '#7342E6' }}>{batchDelay}s</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="1" 
+                      max="30" 
+                      value={batchDelay} 
+                      onChange={(e) => setBatchDelay(parseInt(e.target.value, 10))} 
+                      style={{ width: '100%' }}
+                    />
+                    <span style={{ fontSize: 9, color: '#9898B5', display: 'block', marginTop: 4 }}>
+                      Increase this delay (e.g. 15s - 30s) if you only have a single free Groq API key to avoid 429 rate limits.
+                    </span>
                   </div>
 
                   {/* Include Keywords Textarea */}
