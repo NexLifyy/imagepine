@@ -396,8 +396,6 @@ const callGroqApiWithFallback = async (imageB64, mimeType, prompt, apiKeys, mode
   // Candidate Groq free vision models in priority order
   const candidateModels = [
     model,
-    'meta-llama/llama-4-scout-17b-16e-instruct',
-    'meta-llama/llama-4-maverick-17b-128e-instruct',
     'qwen/qwen3.6-27b'
   ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
 
@@ -647,21 +645,19 @@ export default function GenerateMetadataPage() {
 
   const isGeneratingRef = useRef(false);
   const currentKeyIndexRef = useRef(0);
-  const [selectedModel, setSelectedModel] = useState('meta-llama/llama-4-scout-17b-16e-instruct');
+  const [selectedModel, setSelectedModel] = useState('qwen/qwen3.6-27b');
 
   // Load API keys from browser cookies on mount
   useEffect(() => {
     const k1 = getCookie('groq_key_1') || '';
     const k2 = getCookie('groq_key_2') || '';
     const k3 = getCookie('groq_key_3') || '';
-    let savedModel = getCookie('groq_model') || 'meta-llama/llama-4-scout-17b-16e-instruct';
+    let savedModel = getCookie('groq_model') || 'qwen/qwen3.6-27b';
     const validModels = [
-      'meta-llama/llama-4-scout-17b-16e-instruct',
-      'meta-llama/llama-4-maverick-17b-128e-instruct',
       'qwen/qwen3.6-27b'
     ];
     if (!validModels.includes(savedModel)) {
-      savedModel = 'meta-llama/llama-4-scout-17b-16e-instruct';
+      savedModel = 'qwen/qwen3.6-27b';
       setCookie('groq_model', savedModel, 365);
     }
     
@@ -759,7 +755,7 @@ export default function GenerateMetadataPage() {
           'Authorization': `Bearer ${firstKey}`
         },
         body: JSON.stringify({
-          model: selectedModel || 'meta-llama/llama-4-scout-17b-16e-instruct',
+          model: selectedModel || 'qwen/qwen3.6-27b',
           messages: [{ role: 'user', content: 'Ping' }],
           max_tokens: 5
         })
@@ -1923,9 +1919,7 @@ export default function GenerateMetadataPage() {
                         outline: 'none'
                       }}
                     >
-                      <option value="meta-llama/llama-4-scout-17b-16e-instruct">Groq Default Model</option>
-                      <option value="meta-llama/llama-4-maverick-17b-128e-instruct">Groq Maverick Model</option>
-                      <option value="qwen/qwen3.6-27b">Groq Qwen Model</option>
+                      <option value="qwen/qwen3.6-27b">Groq Qwen Model (Default)</option>
                     </select>
                   </div>
 
