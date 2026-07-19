@@ -162,7 +162,7 @@ const _FAQS = [
   },
   {
     q: "What AI model is used for image analysis?",
-    a: "The generator uses Gemini vision models (like gemini-1.5-flash) by default, which are highly optimized for fast image tagging."
+    a: "The generator uses Gemini vision models (like gemini-3.5-flash) by default, which are highly optimized for fast image tagging."
   },
   {
     q: "How do I import the output CSV file into stock photo websites?",
@@ -392,6 +392,7 @@ const callGroqApiWithFallback = async (imageB64, mimeType, prompt, apiKeys, mode
   // Candidate Gemini vision models in priority order
   const candidateModels = [
     model,
+    'gemini-3.5-flash',
     'gemini-2.5-flash',
     'gemini-1.5-flash'
   ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
@@ -628,20 +629,21 @@ export default function GenerateMetadataPage() {
 
   const isGeneratingRef = useRef(false);
   const currentKeyIndexRef = useRef(0);
-  const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash');
+  const [selectedModel, setSelectedModel] = useState('gemini-3.5-flash');
 
   // Load API key from browser cookies on mount
   useEffect(() => {
     const gemKey = getCookie('gemini_key') || '';
     setApiKeys([gemKey]);
 
-    let savedModel = getCookie('groq_model') || 'gemini-2.5-flash';
+    let savedModel = getCookie('groq_model') || 'gemini-3.5-flash';
     const validModels = [
+      'gemini-3.5-flash',
       'gemini-2.5-flash',
       'gemini-1.5-flash'
     ];
     if (!validModels.includes(savedModel)) {
-      savedModel = 'gemini-2.5-flash';
+      savedModel = 'gemini-3.5-flash';
       setCookie('groq_model', savedModel, 365);
     }
 
@@ -725,7 +727,7 @@ export default function GenerateMetadataPage() {
         },
         body: JSON.stringify({
           apiKey: key,
-          model: 'gemini-2.5-flash',
+          model: selectedModel || 'gemini-3.5-flash',
           prompt: 'Ping'
         })
       });
@@ -1238,7 +1240,7 @@ export default function GenerateMetadataPage() {
           {showConfig && (
             <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #F1F1F7', display: 'flex', flexDirection: 'column', gap: 14 }} className="animate-fade-in">
               <p style={{ fontSize: 12, color: '#6B6B8A', margin: 0, lineHeight: 1.5 }}>
-                Provide your Gemini API Key. Google AI Studio provides 15 Requests Per Minute (RPM) and 1,000,000 Tokens Per Minute (TPM) completely free. Gemini 1.5 Flash is highly optimized for fast image tagging with virtually zero rate limit interruptions.
+                Provide your Gemini API Key. Google AI Studio provides 15 Requests Per Minute (RPM) and 1,000,000 Tokens Per Minute (TPM) completely free. Gemini 3.5 Flash is highly optimized for fast image tagging with virtually zero rate limit interruptions.
               </p>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
