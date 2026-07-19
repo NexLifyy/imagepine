@@ -72,8 +72,8 @@ const _FEATURES = [
         <line x1="12" y1="22.08" x2="12" y2="12" />
       </svg>
     ),
-    title: 'Groq-Powered Vision',
-    desc: 'Uses Groq\'s high-speed multimodal vision models to extract highly descriptive and relevant metadata tags from your assets instantly.'
+    title: 'Gemini-Powered Vision',
+    desc: 'Uses Google\'s high-speed Gemini multimodal vision models to extract highly descriptive and relevant metadata tags from your assets instantly.'
   },
   {
     icon: (
@@ -105,16 +105,12 @@ const _FEATURES = [
   {
     icon: (
       <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M10 14l-4 4v2h2v-2h2v-2h2l-2-2z" />
-        <circle cx="14" cy="10" r="3" />
-        <path d="M21 12a9 9 0 0 0-9-9" />
-        <path d="M3 12a9 9 0 0 0 9 9" />
-        <polyline points="18 3 21 3 21 6" />
-        <polyline points="6 21 3 21 3 18" />
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
       </svg>
     ),
-    title: 'Fallback Key Rotation',
-    desc: 'Configure up to 3 API keys. If one is rate-limited (429), the tool automatically switches to the next key to ensure zero interruption.'
+    title: 'Generous Free Limits',
+    desc: 'Google AI Studio provides 15 Requests Per Minute (RPM) and 1,000,000 Tokens Per Minute (TPM) completely free, ensuring zero interruptions.'
   },
   {
     icon: (
@@ -137,28 +133,28 @@ const _FEATURES = [
       </svg>
     ),
     title: '100% Secure Cookies',
-    desc: 'Your API keys are stored securely as browser cookies locally on your device and are never sent to external servers.'
+    desc: 'Your Gemini API key is stored securely as browser cookies locally on your device and is never sent to external servers.'
   }
 ];
 
 const _STEPS = [
-  { n: '1', title: 'Save API Keys & Upload', desc: 'Add your Groq API key, save it to cookies, and upload up to 500 files.' },
+  { n: '1', title: 'Save API Key & Upload', desc: 'Add your Gemini API key, save it to cookies, and upload up to 500 files.' },
   { n: '2', title: 'Set Rules & Generate', desc: 'Choose your desired title length, keyword formats, and trigger the batch generator.' },
   { n: '3', title: 'Edit & Download CSV', desc: 'Verify and refine results directly in the app, then download the structured CSV file.' }
 ];
 
 const _FAQS = [
   {
-    q: "Where do I find my Groq API key?",
-    a: "You can create an API key at console.groq.com. Sign up and generate a key instantly."
+    q: "Where do I find my Gemini API key?",
+    a: "You can create a free API key at Google AI Studio (aistudio.google.com). Sign up and generate a key instantly."
   },
   {
-    q: "How does the fallback key rotation work?",
-    a: "Groq API has strict rate limits. By providing up to 3 keys, if key 1 hits an HTTP 429 error, the tool automatically rotates to key 2, then key 3, keeping your batch runs uninterrupted."
+    q: "What are the free plan limits for Gemini?",
+    a: "Google AI Studio provides 15 Requests Per Minute (RPM) and 1,000,000 Tokens Per Minute (TPM) completely free, which is more than enough for batch metadata generation."
   },
   {
-    q: "Are my files stored on Groq?",
-    a: "No, Groq does not store your files permanently; they are processed temporarily for metadata inference. Image Pine downscales image frames locally before uploading to conserve your bandwidth and API limits."
+    q: "Are my files stored on Google?",
+    a: "No, Gemini does not store your files permanently; they are processed temporarily for metadata inference. Image Pine downscales images locally before uploading to conserve your bandwidth."
   },
   {
     q: "Can I edit the generated titles and keywords before exporting?",
@@ -166,7 +162,7 @@ const _FAQS = [
   },
   {
     q: "What AI model is used for image analysis?",
-    a: "The generator uses Groq vision models by default, with automatic key rotation and fallback if needed."
+    a: "The generator uses Gemini vision models (like gemini-1.5-flash) by default, which are highly optimized for fast image tagging."
   },
   {
     q: "How do I import the output CSV file into stock photo websites?",
@@ -385,19 +381,22 @@ const getResizedImageB64 = (fileObj) => {
   });
 };
 
-// API Call with 3-Key Fallback, Rotational Logic, and Cooldown Retry (OpenRouter API)
+// API Call with Fallback Model Support and Cooldown Retry (Gemini API)
 // shouldContinue: optional fn() => bool — if it returns false, cooldown is aborted
 const callGroqApiWithFallback = async (imageB64, mimeType, prompt, apiKeys, model, currentKeyIdx, onKeySwitch, shouldContinue) => {
-  const activeKeys = apiKeys.filter(k => k.trim() !== '');
-  if (activeKeys.length === 0) {
-    throw new Error("No API keys configured. Please configure at least one API key.");
+  const key = apiKeys[0];
+  if (!key || key.trim() === '') {
+    throw new Error("No API key configured. Please configure your Gemini API key.");
   }
 
-  // Candidate Groq free vision models in priority order
+  // Candidate Gemini vision models in priority order
   const candidateModels = [
     model,
-    'qwen/qwen3.6-27b'
+    'gemini-1.5-flash',
+    'gemini-2.5-flash'
   ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
+
+  const endpoint = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
 
   const buildPayload = (currentModel) => ({
     model: currentModel,
@@ -419,7 +418,7 @@ const callGroqApiWithFallback = async (imageB64, mimeType, prompt, apiKeys, mode
     max_tokens: 1500
   });
 
-  const tryFetch = async (key, payload) => fetch('https://api.groq.com/openai/v1/chat/completions', {
+  const tryFetch = async (currentModel, payload) => fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -429,111 +428,68 @@ const callGroqApiWithFallback = async (imageB64, mimeType, prompt, apiKeys, mode
   });
 
   let lastNonRateLimitError = null;
-  let hadRateLimit = false;
+  let success = false;
+  let resultData = null;
+  let modelUsed = candidateModels[0];
 
-  // Attempt all keys. Returns { data, keyUsedIndex, modelUsed } or null if all 429.
-  const tryAllKeys = async (startIdx) => {
-    let index = startIdx % activeKeys.length;
-    for (let attempts = 0; attempts < activeKeys.length; attempts++) {
-      const key = activeKeys[index];
-      let success = false;
-      let resultData = null;
-      let modelUsed = candidateModels[0];
+  // Try candidate models
+  for (let mIdx = 0; mIdx < candidateModels.length; mIdx++) {
+    const currentModel = candidateModels[mIdx];
+    let response = null;
+    try {
+      const payload = buildPayload(currentModel);
+      response = await tryFetch(currentModel, payload);
 
-      // Try each candidate model for this key
-      for (let mIdx = 0; mIdx < candidateModels.length; mIdx++) {
-        const currentModel = candidateModels[mIdx];
-        let response = null;
-        try {
-          const payload = buildPayload(currentModel);
-          response = await tryFetch(key, payload);
-
-          // Per-key 429 retry with backoff: 5s, 10s, 20s
-          if (response.status === 429) {
-            hadRateLimit = true;
-            const delays = [5000, 10000, 20000];
-            for (let retryCount = 0; retryCount < delays.length && response.status === 429; retryCount++) {
-              onKeySwitch?.(`Rate limited (429) on Key ${index + 1} / ${currentModel}. Retrying in ${delays[retryCount] / 1000}s (attempt ${retryCount + 1}/3)...`);
-              await new Promise(r => setTimeout(r, delays[retryCount]));
-              response = await tryFetch(key, payload);
-            }
-          }
-
-          // Still 429 after retries — this key is exhausted, break to next key
-          if (response.status === 429) {
-            hadRateLimit = true;
-            onKeySwitch?.(`Key ${index + 1} still rate limited after retries. Trying next key...`);
-            lastNonRateLimitError = new Error(`Rate limit (429) on model ${currentModel}`);
-            break;
-          }
-
-          if (!response.ok) {
-            const errText = await response.text();
-            let parsedErr = errText;
-            try { parsedErr = JSON.parse(errText)?.error?.message || errText; } catch {}
-            
-            const modelError = new Error(`API Error (Status ${response.status}) on model ${currentModel}: ${parsedErr}`);
-            onKeySwitch?.(`Model ${currentModel} failed: ${modelError.message}`);
-            
-            if (response.status !== 429) {
-              lastNonRateLimitError = modelError;
-            } else {
-              hadRateLimit = true;
-            }
-            
-            if (mIdx < candidateModels.length - 1) continue;
-            throw modelError;
-          }
-
-          const data = await response.json();
-          const content = data.choices?.[0]?.message?.content;
-          if (!content || content.trim() === '') {
-            onKeySwitch?.(`Model ${currentModel} returned empty output. Trying next model...`);
-            const modelError = new Error(`Model ${currentModel} returned an empty response.`);
-            lastNonRateLimitError = modelError;
-            if (mIdx < candidateModels.length - 1) continue;
-            throw modelError;
-          }
-
-          resultData = data;
-          modelUsed = currentModel;
-          success = true;
-          break;
-        } catch (err) {
-          if (response && response.status !== 429) {
-            lastNonRateLimitError = err;
-          } else if (!response) {
-            lastNonRateLimitError = err; // Network or CORS error
-          }
-          if (mIdx < candidateModels.length - 1) {
-            onKeySwitch?.(`Error with ${currentModel}: ${err.message}. Trying next model...`);
-          }
-          // Last model for this key — bubble up to rotate key
-          if (mIdx === candidateModels.length - 1) break;
+      if (response.status === 429) {
+        const delays = [5000, 10000, 20000];
+        for (let retryCount = 0; retryCount < delays.length && response.status === 429; retryCount++) {
+          onKeySwitch?.(`Rate limited (429) on model ${currentModel}. Retrying in ${delays[retryCount] / 1000}s (attempt ${retryCount + 1}/3)...`);
+          await new Promise(r => setTimeout(r, delays[retryCount]));
+          response = await tryFetch(currentModel, payload);
         }
       }
 
-      if (success) return { data: resultData, keyUsedIndex: index, modelUsed };
+      if (!response.ok) {
+        const errText = await response.text();
+        let parsedErr = errText;
+        try { parsedErr = JSON.parse(errText)?.error?.message || errText; } catch {}
+        
+        const modelError = new Error(`API Error (Status ${response.status}) on model ${currentModel}: ${parsedErr}`);
+        onKeySwitch?.(`Model ${currentModel} failed: ${modelError.message}`);
+        
+        lastNonRateLimitError = modelError;
+        if (mIdx < candidateModels.length - 1) continue;
+        throw modelError;
+      }
 
-      // Rotate to next key
-      index = (index + 1) % activeKeys.length;
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+      if (!content || content.trim() === '') {
+        onKeySwitch?.(`Model ${currentModel} returned empty output. Trying next model...`);
+        const modelError = new Error(`Model ${currentModel} returned an empty response.`);
+        lastNonRateLimitError = modelError;
+        if (mIdx < candidateModels.length - 1) continue;
+        throw modelError;
+      }
+
+      resultData = data;
+      modelUsed = currentModel;
+      success = true;
+      break;
+    } catch (err) {
+      lastNonRateLimitError = err;
+      if (mIdx < candidateModels.length - 1) {
+        onKeySwitch?.(`Error with ${currentModel}: ${err.message}. Trying next model...`);
+      }
+      if (mIdx === candidateModels.length - 1) break;
     }
-    return null; // All keys failed
-  };
-
-  // First pass: try all keys
-  const firstPass = await tryAllKeys(currentKeyIdx % activeKeys.length);
-  if (firstPass) return firstPass;
-
-  // If we had a non-rate-limit error (e.g. 401, 400, 403, network error) and did not succeed,
-  // throw it immediately instead of waiting for cooldown.
-  if (lastNonRateLimitError && !hadRateLimit) {
-    throw lastNonRateLimitError;
   }
 
-  // All keys are rate-limited — wait 60s then retry once
+  if (success) return { data: resultData, keyUsedIndex: 0, modelUsed };
+
+  // If rate limited, trigger cooldown
   const COOLDOWN = 60;
-  onKeySwitch?.(`⏳ All ${activeKeys.length} API key(s) are rate limited (429). Waiting ${COOLDOWN}s for Groq limits to reset...`);
+  onKeySwitch?.(`⏳ Gemini API Key is rate limited (429). Waiting ${COOLDOWN}s for Gemini limits to reset...`);
   for (let s = COOLDOWN; s > 0; s--) {
     if (shouldContinue && !shouldContinue()) {
       throw new Error('Generation stopped by user during cooldown.');
@@ -548,14 +504,17 @@ const callGroqApiWithFallback = async (imageB64, mimeType, prompt, apiKeys, mode
     throw new Error('Generation stopped by user during cooldown.');
   }
 
-  onKeySwitch?.('🔄 Retrying all keys after cooldown...');
-  const secondPass = await tryAllKeys(0);
-  if (secondPass) return secondPass;
+  onKeySwitch?.('🔄 Retrying after cooldown...');
+  try {
+    const payload = buildPayload(candidateModels[0]);
+    const retryResponse = await tryFetch(candidateModels[0], payload);
+    if (retryResponse.ok) {
+      const retryData = await retryResponse.json();
+      return { data: retryData, keyUsedIndex: 0, modelUsed: candidateModels[0] };
+    }
+  } catch {}
 
-  if (lastNonRateLimitError) {
-    throw lastNonRateLimitError;
-  }
-  throw new Error(`All configured API keys returned rate limits (429). Please add more API keys or wait a few minutes before resuming.`);
+  throw lastNonRateLimitError || new Error("Failed to process image with the Gemini API key.");
 };
 
 // Cookie Helpers
@@ -606,9 +565,9 @@ export default function GenerateMetadataPage() {
   }, [toast]);
 
   // Dynamic API Keys configuration
-  const [apiKeys, setApiKeys] = useState(['']); // Starts with one key input
+  const [apiKeys, setApiKeys] = useState(['']); // Hold single Gemini API Key
   const [showConfig, setShowConfig] = useState(true);
-  const [showKeys, setShowKeys] = useState([false, false, false]);
+  const [showKeys, setShowKeys] = useState([false]);
   const [isSaved, setIsSaved] = useState(false);
   const [testStatus, setTestStatus] = useState(''); // 'testing' | 'success' | 'failed' | ''
   const [testMessage, setTestMessage] = useState('');
@@ -646,33 +605,27 @@ export default function GenerateMetadataPage() {
 
   const isGeneratingRef = useRef(false);
   const currentKeyIndexRef = useRef(0);
-  const [selectedModel, setSelectedModel] = useState('qwen/qwen3.6-27b');
+  const [selectedModel, setSelectedModel] = useState('gemini-1.5-flash');
 
-  // Load API keys from browser cookies on mount
+  // Load API key from browser cookies on mount
   useEffect(() => {
-    const k1 = getCookie('groq_key_1') || '';
-    const k2 = getCookie('groq_key_2') || '';
-    const k3 = getCookie('groq_key_3') || '';
-    let savedModel = getCookie('groq_model') || 'qwen/qwen3.6-27b';
+    const gemKey = getCookie('gemini_key') || '';
+    setApiKeys([gemKey]);
+
+    let savedModel = getCookie('groq_model') || 'gemini-1.5-flash';
     const validModels = [
-      'qwen/qwen3.6-27b'
+      'gemini-1.5-flash',
+      'gemini-2.5-flash'
     ];
     if (!validModels.includes(savedModel)) {
-      savedModel = 'qwen/qwen3.6-27b';
+      savedModel = 'gemini-1.5-flash';
       setCookie('groq_model', savedModel, 365);
     }
-    
-    const loaded = [];
-    if (k1) loaded.push(k1);
-    if (k2) loaded.push(k2);
-    if (k3) loaded.push(k3);
-    
-    if (loaded.length > 0) {
-      setApiKeys(loaded);
+
+    if (gemKey) {
       setIsSaved(true);
-      setShowConfig(false); // Collapse box since keys exist
+      setShowConfig(false);
     } else {
-      setApiKeys(['']);
       setIsSaved(false);
     }
 
@@ -718,45 +671,38 @@ export default function GenerateMetadataPage() {
   };
 
   const handleSaveApi = () => {
-    // Filter out any empty keys to prevent saving blank slots or rendering them on refresh
-    const cleanKeys = apiKeys.map(k => k.trim()).filter(Boolean);
-    const finalKeys = cleanKeys.length > 0 ? cleanKeys : [''];
-    
-    setApiKeys(finalKeys);
-
-    // Save to cookies
-    setCookie('groq_key_1', finalKeys[0] || '', 365);
-    setCookie('groq_key_2', finalKeys[1] || '', 365);
-    setCookie('groq_key_3', finalKeys[2] || '', 365);
+    const cleanKey = apiKeys[0].trim();
+    setApiKeys([cleanKey]);
+    setCookie('gemini_key', cleanKey, 365);
     
     setIsSaved(true);
     setTestStatus('');
-    setTestMessage('API Keys saved securely in browser cookies.');
-    addLog("API keys updated in cookies.", "success");
+    setTestMessage('Gemini API Configuration saved securely in browser cookies.');
+    addLog("Gemini API key saved in cookies.", "success");
     setTimeout(() => setTestMessage(''), 3000);
   };
 
   const handleTestApi = async () => {
-    const firstKey = apiKeys[0];
-    if (!firstKey) {
+    const key = apiKeys[0];
+    if (!key) {
       setTestStatus('failed');
       setTestMessage('No API key configured to test.');
       return;
     }
 
     setTestStatus('testing');
-    setTestMessage('Testing API Key 1 connection...');
-    addLog("Testing key 1 with simple ping...", "info");
+    setTestMessage('Testing Gemini API Connection...');
+    addLog("Testing Gemini key with simple ping...", "info");
 
     try {
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${firstKey}`
+          'Authorization': `Bearer ${key}`
         },
         body: JSON.stringify({
-          model: selectedModel || 'qwen/qwen3.6-27b',
+          model: 'gemini-1.5-flash',
           messages: [{ role: 'user', content: 'Ping' }],
           max_tokens: 5
         })
@@ -764,7 +710,7 @@ export default function GenerateMetadataPage() {
 
       if (response.ok) {
         setTestStatus('success');
-        setTestMessage('Test Successful! API Connection is valid.');
+        setTestMessage('Test Successful! Gemini API Connection is valid.');
         addLog("API check passed.", "success");
       } else {
         const text = await response.text();
@@ -857,10 +803,11 @@ export default function GenerateMetadataPage() {
       return;
     }
 
-    const activeKeys = apiKeys.filter(k => k.trim() !== '');
-    if (activeKeys.length === 0) {
+    const hasKeys = apiKeys.filter(k => k.trim() !== '').length > 0;
+
+    if (!hasKeys) {
       setShowConfig(true);
-      showToast("Please configure and save at least one Groq API Key under 'API Configuration' first.", "warning");
+      showToast("Please configure and save your Gemini API Key under 'API Configuration' first.", "warning");
       return;
     }
 
@@ -926,7 +873,7 @@ export default function GenerateMetadataPage() {
           mimeType = res.mimeType;
         }
 
-        // Send API Request to Groq
+        // Send API Request to Gemini
         const { data, keyUsedIndex, modelUsed } = await callGroqApiWithFallback(
           b64,
           mimeType,
@@ -1249,7 +1196,7 @@ export default function GenerateMetadataPage() {
               <div>
                 <h3 style={{ fontSize: 14, fontWeight: 700, color: '#111128', margin: 0 }}>API Configuration</h3>
                 <p style={{ fontSize: 11, color: '#9898B5', margin: '2px 0 0' }}>
-                  {numConfiguredKeys > 0 ? `${numConfiguredKeys} key${numConfiguredKeys > 1 ? 's' : ''} configured` : 'Enter Groq API key to start'}
+                  {apiKeys[0] ? 'Gemini: API key configured' : 'Enter Gemini API key to start'}
                 </p>
               </div>
             </div>
@@ -1269,77 +1216,52 @@ export default function GenerateMetadataPage() {
           {showConfig && (
             <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #F1F1F7', display: 'flex', flexDirection: 'column', gap: 14 }} className="animate-fade-in">
               <p style={{ fontSize: 12, color: '#6B6B8A', margin: 0, lineHeight: 1.5 }}>
-                Provide up to three Groq API Keys. Keys are stored securely in browser cookies and sent directly to Groq. If key 1 hits a rate limit (HTTP 429), rotation fallbacks will proceed to key 2, then key 3.
+                Provide your Gemini API Key. Google AI Studio provides 15 Requests Per Minute (RPM) and 1,000,000 Tokens Per Minute (TPM) completely free. Gemini 1.5 Flash is highly optimized for fast image tagging with virtually zero rate limit interruptions.
               </p>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {apiKeys.map((key, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
-                      <input
-                        type={showKeys[idx] ? 'text' : 'password'}
-                        value={key}
-                        onChange={(e) => handleKeyChange(idx, e.target.value)}
-                        placeholder={`Groq API Key ${idx + 1}`}
-                        style={{
-                          width: '100%', padding: '9px 40px 9px 12px',
-                          background: '#F7F7FB', border: '1px solid #E4E4EF',
-                          borderRadius: 9, fontSize: 13, fontWeight: 600,
-                          color: '#111128', outline: 'none', fontFamily: 'monospace'
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const updated = [...showKeys];
-                          updated[idx] = !updated[idx];
-                          setShowKeys(updated);
-                        }}
-                        style={{
-                          position: 'absolute', right: 8, background: 'none', border: 'none',
-                          color: '#9898B5', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4
-                        }}
-                      >
-                        {showKeys[idx] ? (
-                          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                          </svg>
-                        ) : (
-                          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.43 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                            <circle cx="12" cy="12" r="3" />
-                          </svg>
-                        )}
-                      </button>
-                    </div>
-                    {apiKeys.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeKeyField(idx)}
-                        style={{
-                          background: '#FFF5F5', border: '1px solid #FECACA', color: '#EF4444',
-                          borderRadius: 9, padding: '9px 12px', cursor: 'pointer', fontSize: 13, fontWeight: 700
-                        }}
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                ))}
-
-                {apiKeys.length < 3 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+                  <input
+                    type={showKeys[0] ? 'text' : 'password'}
+                    value={apiKeys[0]}
+                    onChange={(e) => {
+                      setApiKeys([e.target.value]);
+                      setIsSaved(false);
+                      setTestStatus('');
+                      setTestMessage('');
+                    }}
+                    placeholder="Gemini API Key (AI Studio)"
+                    style={{
+                      width: '100%', padding: '9px 40px 9px 12px',
+                      background: '#F7F7FB', border: '1px solid #E4E4EF',
+                      borderRadius: 9, fontSize: 13, fontWeight: 600,
+                      color: '#111128', outline: 'none', fontFamily: 'monospace'
+                    }}
+                  />
                   <button
                     type="button"
-                    onClick={addKeyField}
+                    onClick={() => {
+                      const updated = [...showKeys];
+                      updated[0] = !updated[0];
+                      setShowKeys(updated);
+                    }}
                     style={{
-                      alignSelf: 'flex-start', background: '#F1F1F7', border: '1px solid #E4E4EF',
-                      borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 11, fontWeight: 750,
-                      color: '#7342E6', display: 'flex', alignItems: 'center', gap: 4
+                      position: 'absolute', right: 8, background: 'none', border: 'none',
+                      color: '#9898B5', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4
                     }}
                   >
-                    + Add More API Key
+                    {showKeys[0] ? (
+                      <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                      </svg>
+                    ) : (
+                      <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.43 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
                   </button>
-                )}
+                </div>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
@@ -1373,7 +1295,7 @@ export default function GenerateMetadataPage() {
                 )}
 
                 <a
-                  href="https://console.groq.com/keys"
+                  href="https://aistudio.google.com/"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -1920,7 +1842,8 @@ export default function GenerateMetadataPage() {
                         outline: 'none'
                       }}
                     >
-                      <option value="qwen/qwen3.6-27b">Groq Qwen Model (Default)</option>
+                      <option value="gemini-1.5-flash">Gemini 1.5 Flash (Default)</option>
+                      <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
                     </select>
                   </div>
 
