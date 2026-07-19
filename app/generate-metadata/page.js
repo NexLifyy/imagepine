@@ -304,7 +304,7 @@ const getVideoFrameB64 = (fileObj) => {
     video.onseeked = () => {
       try {
         const canvas = document.createElement('canvas');
-        const maxDim = 1024;
+        const maxDim = 768;
         let width = video.videoWidth || 640;
         let height = video.videoHeight || 480;
         
@@ -351,7 +351,7 @@ const getResizedImageB64 = (fileObj) => {
       img.onload = () => {
         try {
           const canvas = document.createElement('canvas');
-          const maxDim = 1024;
+          const maxDim = 768;
           let width = img.naturalWidth || img.width;
           let height = img.naturalHeight || img.height;
 
@@ -971,10 +971,10 @@ export default function GenerateMetadataPage() {
 
         addLog(`Successfully processed ${file.name} using ${modelUsed} (Key ${keyUsedIndex + 1})`, "success");
 
-        // 3s inter-image delay to stay within OpenRouter's 20 req/min free tier
+        // 5s inter-image delay to stay within Groq free tier TPM limits
         const isLastFile = pendingFiles.indexOf(file) === pendingFiles.length - 1;
         if (!isLastFile && isGeneratingRef.current) {
-          await new Promise(r => setTimeout(r, 3000));
+          await new Promise(r => setTimeout(r, 5000));
         }
       } catch (err) {
         console.error(err);
@@ -2033,6 +2033,56 @@ export default function GenerateMetadataPage() {
 
               </div>
 
+            </div>
+
+            {/* Real-time Activity Logs Panel */}
+            <div style={{ background: '#fff', border: '1px solid #E4E4EF', borderRadius: 20, padding: '20px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F1F7', paddingBottom: 8 }}>
+                <h4 style={{ fontSize: 10, fontWeight: 800, color: '#9898B5', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+                  Console Logs & API Events
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => setLogs([])}
+                  style={{ background: 'none', border: 'none', color: '#EF4444', fontSize: 10, fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Clear Logs
+                </button>
+              </div>
+              <div 
+                style={{ 
+                  maxHeight: 140, 
+                  overflowY: 'auto', 
+                  background: '#F7F7FB', 
+                  borderRadius: 12, 
+                  padding: '12px', 
+                  fontFamily: 'monospace', 
+                  fontSize: 11, 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: 6 
+                }}
+              >
+                {logs.length === 0 ? (
+                  <span style={{ color: '#9898B5' }}>No activity logs yet. Generation events will be shown here in real-time.</span>
+                ) : (
+                  logs.map((log, idx) => {
+                    let color = '#4E4E6D'; // Info
+                    if (log.type === 'error') color = '#EF4444';
+                    else if (log.type === 'warning') color = '#F59E0B';
+                    else if (log.type === 'success') color = '#10B981';
+
+                    return (
+                      <div key={idx} style={{ display: 'flex', gap: 8, color, lineHeight: 1.4 }}>
+                        <span style={{ color: '#9898B5', flexShrink: 0 }}>[{log.time}]</span>
+                        <span style={{ fontWeight: 700, textTransform: 'uppercase', flexShrink: 0 }}>[{log.type}]</span>
+                        <span style={{ wordBreak: 'break-all' }}>{log.text}</span>
+                      </div>
+                    );
+                  })
+                )}
+                <div ref={logsEndRef} />
+              </div>
             </div>
 
           </div>
