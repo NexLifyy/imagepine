@@ -416,12 +416,18 @@ const callGroqApiWithFallback = async (imageB64, mimeType, prompt, apiKeys, mode
     }
   });
 
-  const tryFetch = async (currentModel, payload) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${key}`, {
+  const tryFetch = async (currentModel, payload) => fetch('/api/gemini', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({
+      imageB64: imageB64,
+      mimeType: mimeType,
+      prompt: prompt,
+      model: currentModel,
+      apiKey: key
+    })
   });
 
   let lastNonRateLimitError = null;
@@ -709,16 +715,18 @@ export default function GenerateMetadataPage() {
 
     setTestStatus('testing');
     setTestMessage('Testing Gemini API Connection...');
-    addLog("Testing Gemini key with simple native ping...", "info");
+    addLog("Testing Gemini key with simple native ping through server route...", "info");
 
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+      const response = await fetch('/api/gemini', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: 'Ping' }] }]
+          apiKey: key,
+          model: 'gemini-1.5-flash',
+          prompt: 'Ping'
         })
       });
 
@@ -729,7 +737,7 @@ export default function GenerateMetadataPage() {
       } else {
         const text = await response.text();
         let detail = '';
-        try { detail = JSON.parse(text)?.error?.message || text; } catch { detail = text; }
+        try { detail = JSON.parse(text)?.error || text; } catch { detail = text; }
         setTestStatus('failed');
         setTestMessage(`Test failed (Status ${response.status}): ${detail.slice(0, 120)}`);
         addLog(`API check failed: ${text}`, "error");
