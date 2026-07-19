@@ -392,8 +392,8 @@ const callGroqApiWithFallback = async (imageB64, mimeType, prompt, apiKeys, mode
   // Candidate Gemini vision models in priority order
   const candidateModels = [
     model,
-    'gemini-1.5-flash',
-    'gemini-2.5-flash'
+    'gemini-2.5-flash',
+    'gemini-1.5-flash'
   ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
 
   const buildPayload = (currentModel) => ({
@@ -628,20 +628,20 @@ export default function GenerateMetadataPage() {
 
   const isGeneratingRef = useRef(false);
   const currentKeyIndexRef = useRef(0);
-  const [selectedModel, setSelectedModel] = useState('gemini-1.5-flash');
+  const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash');
 
   // Load API key from browser cookies on mount
   useEffect(() => {
     const gemKey = getCookie('gemini_key') || '';
     setApiKeys([gemKey]);
 
-    let savedModel = getCookie('groq_model') || 'gemini-1.5-flash';
+    let savedModel = getCookie('groq_model') || 'gemini-2.5-flash';
     const validModels = [
-      'gemini-1.5-flash',
-      'gemini-2.5-flash'
+      'gemini-2.5-flash',
+      'gemini-1.5-flash'
     ];
     if (!validModels.includes(savedModel)) {
-      savedModel = 'gemini-1.5-flash';
+      savedModel = 'gemini-2.5-flash';
       setCookie('groq_model', savedModel, 365);
     }
 
@@ -725,7 +725,7 @@ export default function GenerateMetadataPage() {
         },
         body: JSON.stringify({
           apiKey: key,
-          model: 'gemini-1.5-flash',
+          model: 'gemini-2.5-flash',
           prompt: 'Ping'
         })
       });

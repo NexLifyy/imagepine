@@ -27,7 +27,7 @@ export async function onRequestPost(context) {
     return json({ error: "Missing API Key" }, 400);
   }
 
-  const targetModel = model || 'gemini-1.5-flash';
+  const targetModel = model || 'gemini-2.5-flash';
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
 
   const parts = [{ text: prompt || 'Ping' }];
