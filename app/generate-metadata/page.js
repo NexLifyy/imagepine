@@ -1194,12 +1194,12 @@ export default function GenerateMetadataPage() {
   return (
     <ToolPageShell
       title="Generate Metadata"
-      subtitle="Instantly generate SEO tags, titles, and descriptions for your files using Groq vision AI. Ideal for stock photography cataloging."
+      subtitle="Instantly generate SEO tags, titles, and descriptions for your files using Google Gemini vision AI. Ideal for stock photography cataloging."
       features={_FEATURES}
       steps={_STEPS}
       faqs={_FAQS}
       seoTitle="AI Image Metadata Generator — Batch Generate Titles, Tags & Descriptions"
-      seoText="Free online client-side AI Metadata Generator. Batch generate search engine metadata tags, file descriptions, and titles for your portfolio using Groq vision models. Custom lengths, keyword rules, and local CSV downloads with total privacy."
+      seoText="Free online client-side AI Metadata Generator. Batch generate search engine metadata tags, file descriptions, and titles for your portfolio using Google Gemini vision models. Custom lengths, keyword rules, and local CSV downloads with total privacy."
     >
       <div className="flex flex-col gap-6">
 
