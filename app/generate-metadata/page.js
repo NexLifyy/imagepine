@@ -381,7 +381,7 @@ const getResizedImageB64 = (fileObj) => {
   });
 };
 
-// API Call with Fallback Model Support and Cooldown Retry (Gemini API)
+// API Call with Fallback Model Support and Cooldown Retry (Native Gemini API)
 // shouldContinue: optional fn() => bool — if it returns false, cooldown is aborted
 const callGroqApiWithFallback = async (imageB64, mimeType, prompt, apiKeys, model, currentKeyIdx, onKeySwitch, shouldContinue) => {
   const key = apiKeys[0];
@@ -396,33 +396,30 @@ const callGroqApiWithFallback = async (imageB64, mimeType, prompt, apiKeys, mode
     'gemini-2.5-flash'
   ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
 
-  const endpoint = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
-
   const buildPayload = (currentModel) => ({
-    model: currentModel,
-    response_format: { type: "json_object" },
-    messages: [
-      {
-        role: 'system',
-        content: 'You are an AI assistant that analyzes images. Respond ONLY with a raw JSON object — no markdown, no code fences, no explanations. Start your response with { and end with }.'
-      },
+    contents: [
       {
         role: 'user',
-        content: [
-          { type: 'text', text: prompt },
-          { type: 'image_url', image_url: { url: `data:${mimeType};base64,${imageB64}` } }
+        parts: [
+          { text: prompt },
+          {
+            inlineData: {
+              mimeType: mimeType,
+              data: imageB64
+            }
+          }
         ]
       }
     ],
-    temperature: 0.2,
-    max_tokens: 1500
+    generationConfig: {
+      responseMimeType: "application/json"
+    }
   });
 
-  const tryFetch = async (currentModel, payload) => fetch(endpoint, {
+  const tryFetch = async (currentModel, payload) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${key}`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${key}`
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify(payload)
   });
@@ -463,7 +460,7 @@ const callGroqApiWithFallback = async (imageB64, mimeType, prompt, apiKeys, mode
       }
 
       const data = await response.json();
-      const content = data.choices?.[0]?.message?.content;
+      const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!content || content.trim() === '') {
         onKeySwitch?.(`Model ${currentModel} returned empty output. Trying next model...`);
         const modelError = new Error(`Model ${currentModel} returned an empty response.`);
@@ -485,7 +482,18 @@ const callGroqApiWithFallback = async (imageB64, mimeType, prompt, apiKeys, mode
     }
   }
 
-  if (success) return { data: resultData, keyUsedIndex: 0, modelUsed };
+  if (success) {
+    const formattedResponse = {
+      choices: [
+        {
+          message: {
+            content: resultData.candidates?.[0]?.content?.parts?.[0]?.text || '{}'
+          }
+        }
+      ]
+    };
+    return { data: formattedResponse, keyUsedIndex: 0, modelUsed };
+  }
 
   // If rate limited, trigger cooldown
   const COOLDOWN = 60;
@@ -510,7 +518,16 @@ const callGroqApiWithFallback = async (imageB64, mimeType, prompt, apiKeys, mode
     const retryResponse = await tryFetch(candidateModels[0], payload);
     if (retryResponse.ok) {
       const retryData = await retryResponse.json();
-      return { data: retryData, keyUsedIndex: 0, modelUsed: candidateModels[0] };
+      const formattedResponse = {
+        choices: [
+          {
+            message: {
+              content: retryData.candidates?.[0]?.content?.parts?.[0]?.text || '{}'
+            }
+          }
+        ]
+      };
+      return { data: formattedResponse, keyUsedIndex: 0, modelUsed: candidateModels[0] };
     }
   } catch {}
 
@@ -692,19 +709,16 @@ export default function GenerateMetadataPage() {
 
     setTestStatus('testing');
     setTestMessage('Testing Gemini API Connection...');
-    addLog("Testing Gemini key with simple ping...", "info");
+    addLog("Testing Gemini key with simple native ping...", "info");
 
     try {
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${key}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'gemini-1.5-flash',
-          messages: [{ role: 'user', content: 'Ping' }],
-          max_tokens: 5
+          contents: [{ role: 'user', parts: [{ text: 'Ping' }] }]
         })
       });
 
