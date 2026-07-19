@@ -398,12 +398,12 @@ const callGroqApiWithFallback = async (imageB64, mimeType, prompt, apiKeys, mode
     model,
     'meta-llama/llama-4-scout-17b-16e-instruct',
     'meta-llama/llama-4-maverick-17b-128e-instruct',
-    'qwen/qwen3.6-27b',
-    'llama-3.2-11b-vision-preview'
+    'qwen/qwen3.6-27b'
   ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
 
   const buildPayload = (currentModel) => ({
     model: currentModel,
+    response_format: { type: "json_object" },
     messages: [
       {
         role: 'system',
@@ -658,8 +658,7 @@ export default function GenerateMetadataPage() {
     const validModels = [
       'meta-llama/llama-4-scout-17b-16e-instruct',
       'meta-llama/llama-4-maverick-17b-128e-instruct',
-      'qwen/qwen3.6-27b',
-      'llama-3.2-11b-vision-preview'
+      'qwen/qwen3.6-27b'
     ];
     if (!validModels.includes(savedModel)) {
       savedModel = 'meta-llama/llama-4-scout-17b-16e-instruct';
@@ -1927,7 +1926,6 @@ export default function GenerateMetadataPage() {
                       <option value="meta-llama/llama-4-scout-17b-16e-instruct">Groq Default Model</option>
                       <option value="meta-llama/llama-4-maverick-17b-128e-instruct">Groq Maverick Model</option>
                       <option value="qwen/qwen3.6-27b">Groq Qwen Model</option>
-                      <option value="llama-3.2-11b-vision-preview">Groq Llama 3.2 (Legacy)</option>
                     </select>
                   </div>
 
