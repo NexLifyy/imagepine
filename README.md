@@ -5,56 +5,91 @@
 [![Privacy Focused](https://img.shields.io/badge/Privacy-100%25%20Client--Side-00C853?style=for-the-badge&logo=shield&logoColor=white)](https://www.imagepine.com/)
 [![License](https://img.shields.io/badge/License-MIT-blue.style=for-the-badge)](LICENSE)
 
-**Image Pine** (https://www.imagepine.com/) is a powerful, privacy-first web application featuring over 50+ free online image, document, AI metadata, GIF, and PDF tools. All image processing, canvas operations, OCR text extraction, and PDF manipulation take place locally in your browser sandbox, ensuring your files never leave your device.
+**Image Pine** ([https://www.imagepine.com/](https://www.imagepine.com/)) is a high-performance, privacy-first web application offering a comprehensive suite of **50+ free online image, document, AI metadata, GIF, and PDF tools**.
+
+All image editing, format conversion, PDF manipulation, and OCR text extraction take place **100% client-side** inside your browser sandbox. Your photos and documents are never uploaded to any external server.
 
 ---
 
-## ✨ Key Features & Capabilities
+## 🧰 Complete Suite of 50+ Tools
 
-### 🤖 1. AI Metadata & Vision Tagging
-- **Gemini 3.5 Flash Integration**: Generate high-converting stock photo titles, descriptions, and SEO keywords automatically.
-- **Batch Processing**: Infer metadata for up to 500 images simultaneously.
-- **Stock Platform Formats**: One-click CSV export optimized for Adobe Stock, Shutterstock, iStock, Freepik, Pond5, and 123RF.
+### 🤖 AI Vision & Metadata Tools
+1. **[AI Gemini Metadata Generator](https://www.imagepine.com/generate-metadata)** (`/generate-metadata`) — Batch generate SEO titles, descriptions, and tag keywords for stock photography & asset catalogs using Google Gemini 3.5 Flash. Export ready-to-upload CSVs for Adobe Stock, Shutterstock, iStock, Freepik, Pond5, and 123RF.
+2. **[EXIF & Metadata Viewer](https://www.imagepine.com/metadata)** (`/metadata`) — Inspect detailed EXIF metadata, camera settings, shutter speed, ISO, GPS coordinates, and embedded color profile parameters.
 
-### 🎭 2. Interactive Meme Generator
-- **Live Canvas Editor**: Click and drag text directly on top of images with real-time responsive font scaling.
-- **100+ Meme Templates**: Built-in template search integration powered by Imgflip and Memegen APIs.
-- **Custom Uploads & Zero Watermarks**: Import custom local photos and export high-resolution memes without watermarks.
+### 🎭 Creative & Content Creation
+3. **[Interactive Meme Generator](https://www.imagepine.com/meme-generator)** (`/meme-generator`) — Live canvas meme editor with 100+ template presets (Imgflip & Memegen APIs), custom image uploads, draggable text boxes, responsive text scaling, and watermark-free exports.
+4. **[Optical Character Recognition (OCR)](https://www.imagepine.com/ocr)** (`/ocr`) — Extract editable text from printed documents, screenshots, and images client-side via Tesseract.js.
+5. **[QR Code Generator](https://www.imagepine.com/qr-generator)** (`/qr-generator`) — Generate custom high-resolution QR codes for URLs, text, Wi-Fi networks, and contact vCards.
+6. **[Photo Collage Maker](https://www.imagepine.com/collage)** (`/collage`) — Grid layouts and custom border spacing for multi-photo collages.
+7. **[Watermark Creator](https://www.imagepine.com/watermark)** (`/watermark`) — Stamp custom text or logo watermarks across batch images.
+8. **[Color Palette Extractor](https://www.imagepine.com/palette-extractor)** (`/palette-extractor`) — Extract dominant color palettes, HEX, RGB, and HSL color codes from any image.
+9. **[Pixel Art Generator](https://www.imagepine.com/pixelator)** (`/pixelator`) — Convert standard photos into retro 8-bit / 16-bit pixel art with customizable block size.
 
-### 🔄 3. Image Converters
-- **Multi-Format Support**: Convert between PNG, JPG, WebP, HEIC, AVIF, SVG, TIFF, and BMP seamlessly.
-- **Batch Conversions**: Process hundreds of image conversions in parallel inside Web Workers.
-- **Vector & Raster Tools**: SVG rasterization and PNG-to-SVG vectorization.
+### 📄 PDF & Document Tools
+10. **[Universal PDF Converter](https://www.imagepine.com/pdf-converter)** (`/pdf-converter`) — Convert documents and images to and from PDF format.
+11. **[Image to PDF Converter](https://www.imagepine.com/image-to-pdf)** (`/image-to-pdf`) — Compile multiple images into a single structured PDF document.
+12. **[JPG to PDF Converter](https://www.imagepine.com/jpg-to-pdf)** (`/jpg-to-pdf`) — Convert JPG/JPEG photos into PDF pages.
+13. **[PNG to PDF Converter](https://www.imagepine.com/png-to-pdf)** (`/png-to-pdf`) — Convert transparent or opaque PNG files to PDF format.
+14. **[PDF to Image Extractor](https://www.imagepine.com/pdf-to-images)** (`/pdf-to-images`) — Render PDF pages into high-resolution JPG or PNG images.
+15. **[PDF Compressor](https://www.imagepine.com/compress-pdf)** (`/compress-pdf`) — Reduce PDF document file size while preserving text legibility.
+16. **[Add / Remove & Reorder PDF Pages](https://www.imagepine.com/add-remove-pdf-pages)** (`/add-remove-pdf-pages`) — Merge, split, delete, rotate, or reorder individual pages within PDF files.
 
-### 📄 4. PDF Tools & Document Processing
-- **PDF Converters**: Convert JPG, PNG, and WebP images to PDF documents and extract images from PDF files.
-- **PDF Manipulation**: Merge, split, compress, and add or remove pages from PDF documents.
-- **Privacy Guaranteed**: Local client-side processing using `pdf-lib`.
+### 🔄 Image Converters
+17. **[Universal Image Converter](https://www.imagepine.com/image-converter)** (`/image-converter`) — Convert between JPG, PNG, WebP, AVIF, HEIC, TIFF, BMP, and SVG formats.
+18. **[HEIC to JPG Converter](https://www.imagepine.com/heic-to-jpg)** (`/heic-to-jpg`) — Convert Apple iPhone HEIC/HEIF photos to compatible JPG images.
+19. **[AVIF to JPG Converter](https://www.imagepine.com/avif-to-jpg)** (`/avif-to-jpg`) — Decode modern AVIF images into standard JPG formats.
+20. **[WebP to JPG Converter](https://www.imagepine.com/webp-to-jpg)** (`/webp-to-jpg`) — Convert Google WebP images to JPG files.
+21. **[WebP to PNG Converter](https://www.imagepine.com/webp-to-png)** (`/webp-to-png`) — Convert WebP graphics to lossless PNG format.
+22. **[PNG to JPG Converter](https://www.imagepine.com/png-to-jpg)** (`/png-to-jpg`) — Flatten transparent PNGs into standard JPG images.
+23. **[BMP to JPG Converter](https://www.imagepine.com/bmp-to-jpg)** (`/bmp-to-jpg`) — Convert bitmap (BMP) files into compressed JPGs.
+24. **[TIFF to JPG Converter](https://www.imagepine.com/tiff-to-jpg)** (`/tiff-to-jpg`) — Convert high-res multi-page TIFF photos to JPG format.
+25. **[SVG Rasterizer](https://www.imagepine.com/svg-rasterizer)** (`/svg-rasterizer`) — Render vector SVG graphics into PNG or JPG raster images.
+26. **[PNG to SVG Vectorizer](https://www.imagepine.com/png-to-svg)** (`/png-to-svg`) — Vectorize PNG bitmap images into scalable SVG files.
 
-### 🎨 5. Image Editor & Utilities
-- **Batch Resize & Rename**: Bulk resize images by percentage or custom dimensions, and bulk rename asset catalogs.
-- **Crop, Rotate & Flip**: Precise aspect ratio cropping, rotation, and mirror flipping.
-- **Filters & Effects**: Color adjustments, palette extraction, pixelator, watermark overlays, and photo collages.
-- **OCR Text Extraction**: Client-side optical character recognition powered by Tesseract.js.
-- **GIF Tools**: GIF maker, converter, and compression engine.
-- **QR Code Generator**: Custom QR code creator with instant download options.
+### 📐 Image Resizing & Cropping
+27. **[Universal Image Resizer](https://www.imagepine.com/resize)** (`/resize`) — Resize images by exact pixels or scaling percentage.
+28. **[JPG Resizer](https://www.imagepine.com/resize-jpg)** (`/resize-jpg`) — Dedicated JPG image resizing utility.
+29. **[PNG Resizer](https://www.imagepine.com/resize-png)** (`/resize-png`) — Resize PNG images while preserving transparency channels.
+30. **[WebP Resizer](https://www.imagepine.com/resize-webp)** (`/resize-webp`) — Fast WebP resizing tool.
+31. **[Bulk Image Resizer](https://www.imagepine.com/bulk-resize)** (`/bulk-resize`) — Batch resize up to 500 images simultaneously.
+32. **[Universal Image Cropper](https://www.imagepine.com/crop)** (`/crop`) — Freeform and aspect ratio cropping (1:1, 16:9, 4:3, 9:16).
+33. **[JPG Cropper](https://www.imagepine.com/crop-jpg)** (`/crop-jpg`) — Dedicated crop tool for JPG images.
+34. **[PNG Cropper](https://www.imagepine.com/crop-png)** (`/crop-png`) — Crop PNG images with alpha channel preservation.
+35. **[WebP Cropper](https://www.imagepine.com/crop-webp)** (`/crop-webp`) — Crop WebP files.
+
+### ⚡ Compression & Optimization
+36. **[Universal Image Compressor](https://www.imagepine.com/compress)** (`/compress`) — Compress image file sizes with customizable quality controls & background removal engine (`@imgly/background-removal`).
+37. **[JPG Compressor](https://www.imagepine.com/compress-jpg)** (`/compress-jpg`) — Reduce JPG storage footprint while retaining visual quality.
+38. **[PNG Compressor](https://www.imagepine.com/compress-png)** (`/compress-png`) — Lossless and lossy PNG compression engine.
+39. **[GIF Compressor](https://www.imagepine.com/compress-gif)** (`/compress-gif`) — Reduce animated GIF sizes and frame counts.
+
+### 🎞️ GIF & Animation Tools
+40. **[Animated GIF Maker](https://www.imagepine.com/gif-maker)** (`/gif-maker`) — Compile static photos and video frames into animated GIFs.
+41. **[GIF Converter](https://www.imagepine.com/gif-converter)** (`/gif-converter`) — Convert GIFs to video files or frame sequences.
+
+### 🛠️ Utilities & Batch Workflows
+42. **[Bulk Asset Renamer](https://www.imagepine.com/bulk-rename)** (`/bulk-rename`) — Rename large image asset batches with custom prefixes, counters, and date patterns.
+43. **[Image Rotator](https://www.imagepine.com/rotate)** (`/rotate`) — Rotate images 90°, 180°, or 270° without quality degradation.
+44. **[Image Flipper](https://www.imagepine.com/flip)** (`/flip`) — Mirror images horizontally or vertically.
+45. **[Image Filters Engine](https://www.imagepine.com/filters)** (`/filters`) — Apply brightness, contrast, saturation, sepia, grayscale, and blur adjustments.
 
 ---
 
 ## 🛠️ Technology Stack
 
-- **Framework**: [Next.js 14](https://nextjs.org/) (App Router, React 18)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) & Modern Vanilla CSS Design Tokens
-- **AI Integration**: Google Gemini 3.5 Flash Vision API
+- **Core Framework**: [Next.js 14](https://nextjs.org/) (App Router, React 18)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) & Vanilla Design Tokens
+- **AI Engine**: Google Gemini 3.5 Flash Vision Model API
 - **Client-Side Engines**:
-  - **Canvas & Rendering**: HTML5 Canvas API
+  - **Canvas Operations**: HTML5 Canvas API
   - **OCR**: `tesseract.js`
-  - **PDF Utilities**: `pdf-lib`
+  - **PDF Engine**: `pdf-lib`
   - **Background Removal**: `@imgly/background-removal`
-  - **Exif Data**: `exifreader`
+  - **Metadata Parsing**: `exifreader`
   - **GIF Processing**: `gifshot` & `gifuct-js`
   - **HEIC Decoding**: `heic2any`
-  - **Archival Export**: `jszip` & `file-saver`
+  - **Archive Generation**: `jszip` & `file-saver`
 
 ---
 
@@ -62,7 +97,7 @@
 
 ### Prerequisites
 - **Node.js**: v18.0.0 or higher
-- **npm** or **yarn** / **pnpm**
+- **npm** / **yarn** / **pnpm**
 
 ### Installation
 
@@ -78,7 +113,7 @@
    ```
 
 3. **Set up Environment Variables**:
-   Create a `.env.local` file in the root directory:
+   Create a `.env.local` file in the project root:
    ```env
    NEXT_PUBLIC_SITE_URL=https://www.imagepine.com
    ```
@@ -87,40 +122,33 @@
    ```bash
    npm run dev
    ```
-   Open [http://localhost:3000](http://localhost:3000) in your browser to view the app.
+   Open [http://localhost:3000](http://localhost:3000) with your browser.
 
 ---
 
-## 📦 Build & Deployment
+## 📦 Production Build
 
-### Production Build
 ```bash
 npm run build
-```
-
-### Start Production Server
-```bash
 npm run start
 ```
 
 ---
 
-## 🔒 Privacy & Security
+## 🔒 Privacy & Security First
 
-Image Pine is engineered with a strict **Privacy-First** architecture:
-- All client images are processed in-memory using WebAssembly and Web Worker threads.
-- Files are **never uploaded** to third-party file servers.
-- API keys (such as Google Gemini keys) are stored locally in secure browser cookies and sent directly via preflight-restricted endpoints.
+Image Pine is built with privacy at its core:
+- **Zero Server Uploads**: Photos, documents, and canvas renders remain inside your browser sandbox.
+- **Client-Side Processing**: Heavy tasks run in Web Worker threads and in-memory WebAssembly.
+- **Secure API Key Handling**: Custom API keys (e.g. Gemini AI keys) are stored in local browser cookies and never logged on external backend servers.
 
 ---
 
-## ☕ Support & Community
-
-If you find Image Pine helpful, consider supporting the project:
+## ☕ Support & Author
 
 - **Website**: [https://www.imagepine.com/](https://www.imagepine.com/)
 - **Buy Us a Coffee**: [https://buymeacoffee.com/thefaisal](https://buymeacoffee.com/thefaisal)
-- **Product by**: **NexLifyy**
+- **Author**: **NexLifyy**
 
 ---
 
