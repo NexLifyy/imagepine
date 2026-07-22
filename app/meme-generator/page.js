@@ -211,8 +211,26 @@ export default function MemeGeneratorPage() {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [displayedWidth, setDisplayedWidth] = useState(500);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Observe displayed canvas width to scale text in editor to match export exactly
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    const updateDisplayedWidth = () => {
+      if (canvasRef.current) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        if (rect.width > 0) {
+          setDisplayedWidth(rect.width);
+        }
+      }
+    };
+    updateDisplayedWidth();
+    const observer = new ResizeObserver(updateDisplayedWidth);
+    observer.observe(canvasRef.current);
+    return () => observer.disconnect();
+  }, [file]);
 
   // Fetch templates from both Imgflip and Memegen APIs on mount
   useEffect(() => {
@@ -399,6 +417,14 @@ export default function MemeGeneratorPage() {
 
       // Draw background image
       ctx.drawImage(img, 0, 0);
+
+      // Measure displayed width of canvas
+      setTimeout(() => {
+        if (canvasRef.current) {
+          const rect = canvasRef.current.getBoundingClientRect();
+          if (rect.width > 0) setDisplayedWidth(rect.width);
+        }
+      }, 50);
     };
     img.src = file.preview || URL.createObjectURL(file);
   }, [file]);
@@ -784,55 +810,86 @@ export default function MemeGeneratorPage() {
                     
                     {/* Interactive Text Overlay (HTML only, no double render) */}
                     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-                      {texts.map((item, idx) => (
-                        <div
-                          key={item.id}
-                          style={{
-                            position: 'absolute',
-                            left: `${(item.x ?? 0.5) * 100}%`,
-                            top: `${(item.y ?? 0.5) * 100}%`,
-                            transform: 'translate(-50%, -50%)',
-                            pointerEvents: 'auto',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            zIndex: 10 + idx,
-                            width: '80%',
-                            maxWidth: '400px'
-                          }}
-                        >
-                          <input
-                            type="text"
-                            value={item.text}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setTexts(prev => prev.map((t, i) => i === idx ? { ...t, text: val } : t));
-                            }}
-                            onMouseDown={(e) => startDrag(e, idx)}
-                            onTouchStart={(e) => startDrag(e, idx)}
+                      {texts.map((item, idx) => {
+                        const calcFontSize = Math.max(12, Math.round((displayedWidth || 500) * (item.fontSize / 500)));
+                        const shadowOffset = Math.max(1, Math.round(calcFontSize * 0.04));
+                        const dynamicShadow = `-${shadowOffset}px -${shadowOffset}px 0 #000, ${shadowOffset}px -${shadowOffset}px 0 #000, -${shadowOffset}px ${shadowOffset}px 0 #000, ${shadowOffset}px ${shadowOffset}px 0 #000, 0 0 3px #000`;
+
+                        return (
+                          <div
+                            key={item.id}
                             style={{
-                              background: 'transparent',
-                              border: '1.5px dashed rgba(255,255,255,0.4)',
-                              outline: 'none',
-                              color: '#ffffff',
-                              fontFamily: 'Impact, Arial Black, sans-serif',
-                              fontSize: `calc(${item.fontSize}px * 0.35)`,
-                              textAlign: 'center',
-                              textTransform: allCaps ? 'uppercase' : 'none',
-                              textShadow: textShadowStyle,
-                              width: '100%',
-                              minWidth: '150px',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              boxSizing: 'border-box',
-                              cursor: draggingItem === idx ? 'grabbing' : 'move',
-                              transition: 'border-color 0.15s'
+                              position: 'absolute',
+                              left: `${(item.x ?? 0.5) * 100}%`,
+                              top: `${(item.y ?? 0.5) * 100}%`,
+                              transform: 'translate(-50%, -50%)',
+                              pointerEvents: 'auto',
+                              display: 'inline-grid',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              zIndex: 10 + idx,
+                              maxWidth: '95%'
                             }}
-                            onFocus={(e) => { e.target.style.borderColor = '#5B5BD6'; }}
-                            onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.4)'; }}
-                          />
-                        </div>
-                      ))}
+                          >
+                            {/* Hidden span to dynamically force input width to match exact text length */}
+                            <span
+                              style={{
+                                gridArea: '1 / 1',
+                                visibility: 'hidden',
+                                whiteSpace: 'pre',
+                                fontFamily: 'Impact, Arial Black, sans-serif',
+                                fontSize: `${calcFontSize}px`,
+                                fontWeight: 900,
+                                textTransform: allCaps ? 'uppercase' : 'none',
+                                padding: '2px 8px',
+                                boxSizing: 'border-box',
+                                pointerEvents: 'none'
+                              }}
+                            >
+                              {item.text || ' '}
+                            </span>
+
+                            <input
+                              type="text"
+                              value={item.text}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setTexts(prev => prev.map((t, i) => i === idx ? { ...t, text: val } : t));
+                              }}
+                              onMouseDown={(e) => startDrag(e, idx)}
+                              onTouchStart={(e) => startDrag(e, idx)}
+                              style={{
+                                gridArea: '1 / 1',
+                                width: '100%',
+                                height: '100%',
+                                background: 'transparent',
+                                border: '1.5px dashed rgba(255,255,255,0.6)',
+                                outline: 'none',
+                                color: '#ffffff',
+                                fontFamily: 'Impact, Arial Black, sans-serif',
+                                fontSize: `${calcFontSize}px`,
+                                fontWeight: 900,
+                                textAlign: 'center',
+                                textTransform: allCaps ? 'uppercase' : 'none',
+                                textShadow: dynamicShadow,
+                                padding: '2px 8px',
+                                borderRadius: '4px',
+                                boxSizing: 'border-box',
+                                cursor: draggingItem === idx ? 'grabbing' : 'move',
+                                transition: 'border-color 0.15s, box-shadow 0.15s'
+                              }}
+                              onFocus={(e) => {
+                                e.target.style.borderColor = '#5B5BD6';
+                                e.target.style.boxShadow = '0 0 8px rgba(91,91,214,0.6)';
+                              }}
+                              onBlur={(e) => {
+                                e.target.style.borderColor = 'rgba(255,255,255,0.6)';
+                                e.target.style.boxShadow = 'none';
+                              }}
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
