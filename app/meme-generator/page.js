@@ -51,96 +51,96 @@ const _FAQS = [
 const CUSTOM_BOX_COORDINATES = {
   // Drake Hotline Bling
   'imgflip_181913649': [
-    { x: 0.72, y: 0.25, text: 'TOP CAPTION', fontSize: 30 },
-    { x: 0.72, y: 0.75, text: 'BOTTOM CAPTION', fontSize: 30 }
+    { x: 0.72, y: 0.25, text: 'TOP CAPTION', fontSize: 22 },
+    { x: 0.72, y: 0.75, text: 'BOTTOM CAPTION', fontSize: 22 }
   ],
   'memegen_drake': [
-    { x: 0.72, y: 0.25, text: 'TOP CAPTION', fontSize: 30 },
-    { x: 0.72, y: 0.75, text: 'BOTTOM CAPTION', fontSize: 30 }
+    { x: 0.72, y: 0.25, text: 'TOP CAPTION', fontSize: 22 },
+    { x: 0.72, y: 0.75, text: 'BOTTOM CAPTION', fontSize: 22 }
   ],
   
   // Distracted Boyfriend
   'imgflip_112126428': [
-    { x: 0.18, y: 0.72, text: 'OTHER GIRL', fontSize: 24 },
-    { x: 0.50, y: 0.56, text: 'BOYFRIEND', fontSize: 24 },
-    { x: 0.82, y: 0.65, text: 'GIRLFRIEND', fontSize: 24 }
+    { x: 0.18, y: 0.72, text: 'OTHER GIRL', fontSize: 18 },
+    { x: 0.50, y: 0.56, text: 'BOYFRIEND', fontSize: 18 },
+    { x: 0.82, y: 0.65, text: 'GIRLFRIEND', fontSize: 18 }
   ],
   'memegen_disaster': [
-    { x: 0.18, y: 0.72, text: 'OTHER GIRL', fontSize: 24 },
-    { x: 0.50, y: 0.56, text: 'BOYFRIEND', fontSize: 24 },
-    { x: 0.82, y: 0.65, text: 'GIRLFRIEND', fontSize: 24 }
+    { x: 0.18, y: 0.72, text: 'OTHER GIRL', fontSize: 18 },
+    { x: 0.50, y: 0.56, text: 'BOYFRIEND', fontSize: 18 },
+    { x: 0.82, y: 0.65, text: 'GIRLFRIEND', fontSize: 18 }
   ],
   
   // Three-Headed Dragon
   'imgflip_222401278': [
-    { x: 0.20, y: 0.35, text: 'SERIOUS HEAD 1', fontSize: 22 },
-    { x: 0.52, y: 0.32, text: 'SERIOUS HEAD 2', fontSize: 22 },
-    { x: 0.82, y: 0.40, text: 'GOOFY HEAD', fontSize: 22 }
+    { x: 0.20, y: 0.35, text: 'SERIOUS HEAD 1', fontSize: 16 },
+    { x: 0.52, y: 0.32, text: 'SERIOUS HEAD 2', fontSize: 16 },
+    { x: 0.82, y: 0.40, text: 'GOOFY HEAD', fontSize: 16 }
   ],
   'memegen_3hd': [
-    { x: 0.20, y: 0.35, text: 'SERIOUS HEAD 1', fontSize: 22 },
-    { x: 0.52, y: 0.32, text: 'SERIOUS HEAD 2', fontSize: 22 },
-    { x: 0.82, y: 0.40, text: 'GOOFY HEAD', fontSize: 22 }
+    { x: 0.20, y: 0.35, text: 'SERIOUS HEAD 1', fontSize: 16 },
+    { x: 0.52, y: 0.32, text: 'SERIOUS HEAD 2', fontSize: 16 },
+    { x: 0.82, y: 0.40, text: 'GOOFY HEAD', fontSize: 16 }
   ],
 
   // Two Buttons / Daily Struggle
   'imgflip_87743020': [
-    { x: 0.26, y: 0.22, text: 'BUTTON 1', fontSize: 22 },
-    { x: 0.56, y: 0.18, text: 'BUTTON 2', fontSize: 22 },
-    { x: 0.50, y: 0.85, text: 'GUY DECIDING', fontSize: 24 }
+    { x: 0.26, y: 0.22, text: 'BUTTON 1', fontSize: 16 },
+    { x: 0.56, y: 0.18, text: 'BUTTON 2', fontSize: 16 },
+    { x: 0.50, y: 0.85, text: 'GUY DECIDING', fontSize: 18 }
   ],
   
   // Left Exit 12 Off Ramp
   'imgflip_124855084': [
-    { x: 0.33, y: 0.33, text: 'STRAIGHT SIGN', fontSize: 22 },
-    { x: 0.72, y: 0.33, text: 'EXIT SIGN', fontSize: 22 },
-    { x: 0.45, y: 0.82, text: 'CAR VEERING', fontSize: 24 }
+    { x: 0.33, y: 0.33, text: 'STRAIGHT SIGN', fontSize: 16 },
+    { x: 0.72, y: 0.33, text: 'EXIT SIGN', fontSize: 16 },
+    { x: 0.45, y: 0.82, text: 'CAR VEERING', fontSize: 18 }
   ],
   
   // Batman Slapping Robin
   'imgflip_438680': [
-    { x: 0.30, y: 0.58, text: 'ROBIN', fontSize: 24 },
-    { x: 0.75, y: 0.52, text: 'BATMAN', fontSize: 24 }
+    { x: 0.30, y: 0.58, text: 'ROBIN', fontSize: 18 },
+    { x: 0.75, y: 0.52, text: 'BATMAN', fontSize: 18 }
   ],
   'memegen_batman-slap': [
-    { x: 0.30, y: 0.58, text: 'ROBIN', fontSize: 24 },
-    { x: 0.75, y: 0.52, text: 'BATMAN', fontSize: 24 }
+    { x: 0.30, y: 0.58, text: 'ROBIN', fontSize: 18 },
+    { x: 0.75, y: 0.52, text: 'BATMAN', fontSize: 18 }
   ],
   
   // Expanding Brain
   'imgflip_93895088': [
-    { x: 0.25, y: 0.12, text: 'BRAIN STAGE 1', fontSize: 22 },
-    { x: 0.25, y: 0.37, text: 'BRAIN STAGE 2', fontSize: 22 },
-    { x: 0.25, y: 0.62, text: 'BRAIN STAGE 3', fontSize: 22 },
-    { x: 0.25, y: 0.87, text: 'BRAIN STAGE 4', fontSize: 22 }
+    { x: 0.25, y: 0.12, text: 'BRAIN STAGE 1', fontSize: 16 },
+    { x: 0.25, y: 0.37, text: 'BRAIN STAGE 2', fontSize: 16 },
+    { x: 0.25, y: 0.62, text: 'BRAIN STAGE 3', fontSize: 16 },
+    { x: 0.25, y: 0.87, text: 'BRAIN STAGE 4', fontSize: 16 }
   ],
   'memegen_expanding-brain': [
-    { x: 0.25, y: 0.12, text: 'BRAIN STAGE 1', fontSize: 22 },
-    { x: 0.25, y: 0.37, text: 'BRAIN STAGE 2', fontSize: 22 },
-    { x: 0.25, y: 0.62, text: 'BRAIN STAGE 3', fontSize: 22 },
-    { x: 0.25, y: 0.87, text: 'BRAIN STAGE 4', fontSize: 22 }
+    { x: 0.25, y: 0.12, text: 'BRAIN STAGE 1', fontSize: 16 },
+    { x: 0.25, y: 0.37, text: 'BRAIN STAGE 2', fontSize: 16 },
+    { x: 0.25, y: 0.62, text: 'BRAIN STAGE 3', fontSize: 16 },
+    { x: 0.25, y: 0.87, text: 'BRAIN STAGE 4', fontSize: 16 }
   ],
   
   // Tuxedo Winnie the Pooh
   'imgflip_178591752': [
-    { x: 0.30, y: 0.25, text: 'NORMAL POOH', fontSize: 24 },
-    { x: 0.30, y: 0.75, text: 'FANCY POOH', fontSize: 24 }
+    { x: 0.30, y: 0.25, text: 'NORMAL POOH', fontSize: 18 },
+    { x: 0.30, y: 0.75, text: 'FANCY POOH', fontSize: 18 }
   ],
   'memegen_tuxedo-pooh': [
-    { x: 0.30, y: 0.25, text: 'NORMAL POOH', fontSize: 24 },
-    { x: 0.30, y: 0.75, text: 'FANCY POOH', fontSize: 24 }
+    { x: 0.30, y: 0.25, text: 'NORMAL POOH', fontSize: 18 },
+    { x: 0.30, y: 0.75, text: 'FANCY POOH', fontSize: 18 }
   ],
   
   // Always Has Been
   'imgflip_252605381': [
-    { x: 0.20, y: 0.35, text: 'ASTRONAUT 1', fontSize: 22 },
-    { x: 0.78, y: 0.25, text: 'ASTRONAUT 2', fontSize: 22 },
-    { x: 0.50, y: 0.88, text: 'ALWAYS HAS BEEN', fontSize: 24 }
+    { x: 0.20, y: 0.35, text: 'ASTRONAUT 1', fontSize: 16 },
+    { x: 0.78, y: 0.25, text: 'ASTRONAUT 2', fontSize: 16 },
+    { x: 0.50, y: 0.88, text: 'ALWAYS HAS BEEN', fontSize: 18 }
   ],
   'memegen_always-has-been': [
-    { x: 0.20, y: 0.35, text: 'ASTRONAUT 1', fontSize: 22 },
-    { x: 0.78, y: 0.25, text: 'ASTRONAUT 2', fontSize: 22 },
-    { x: 0.50, y: 0.88, text: 'ALWAYS HAS BEEN', fontSize: 24 }
+    { x: 0.20, y: 0.35, text: 'ASTRONAUT 1', fontSize: 16 },
+    { x: 0.78, y: 0.25, text: 'ASTRONAUT 2', fontSize: 16 },
+    { x: 0.50, y: 0.88, text: 'ALWAYS HAS BEEN', fontSize: 18 }
   ]
 };
 
@@ -188,8 +188,8 @@ export default function MemeGeneratorPage() {
   
   // Dynamic list of captions
   const [texts, setTexts] = useState([
-    { id: '1', text: 'TOP CAPTION', fontSize: 32, x: 0.5, y: 0.12 },
-    { id: '2', text: 'BOTTOM CAPTION', fontSize: 32, x: 0.5, y: 0.85 }
+    { id: '1', text: 'TOP CAPTION', fontSize: 22, x: 0.5, y: 0.12 },
+    { id: '2', text: 'BOTTOM CAPTION', fontSize: 22, x: 0.5, y: 0.85 }
   ]);
 
   // Dragging states
@@ -341,14 +341,14 @@ export default function MemeGeneratorPage() {
     if (selectedList.length > 0) {
       setFile(selectedList[0]);
       setTexts([
-        { id: '1', text: 'TOP CAPTION', fontSize: 32, x: 0.5, y: 0.12 },
-        { id: '2', text: 'BOTTOM CAPTION', fontSize: 32, x: 0.5, y: 0.85 }
+        { id: '1', text: 'TOP CAPTION', fontSize: 22, x: 0.5, y: 0.12 },
+        { id: '2', text: 'BOTTOM CAPTION', fontSize: 22, x: 0.5, y: 0.85 }
       ]);
     } else {
       setFile(null);
       setTexts([
-        { id: '1', text: 'TOP CAPTION', fontSize: 32, x: 0.5, y: 0.12 },
-        { id: '2', text: 'BOTTOM CAPTION', fontSize: 32, x: 0.5, y: 0.85 }
+        { id: '1', text: 'TOP CAPTION', fontSize: 22, x: 0.5, y: 0.12 },
+        { id: '2', text: 'BOTTOM CAPTION', fontSize: 22, x: 0.5, y: 0.85 }
       ]);
     }
     setErrorMsg('');
@@ -368,7 +368,7 @@ export default function MemeGeneratorPage() {
       const initialTexts = customCoords.map((coord, i) => ({
         id: String(i + 1),
         text: coord.text,
-        fontSize: coord.fontSize || (customCoords.length >= 3 ? 24 : 32),
+        fontSize: coord.fontSize || (customCoords.length >= 3 ? 18 : 22),
         x: coord.x,
         y: coord.y
       }));
@@ -376,7 +376,7 @@ export default function MemeGeneratorPage() {
     } else {
       // Auto-generate the correct number of boxes based on box_count
       const boxCount = template.box_count || 2;
-      const defaultFontSize = boxCount >= 4 ? 22 : (boxCount === 3 ? 24 : 32);
+      const defaultFontSize = boxCount >= 4 ? 16 : (boxCount === 3 ? 18 : (boxCount === 1 ? 24 : 22));
       const initialTexts = Array.from({ length: boxCount }).map((_, i) => {
         const y = boxCount === 1 ? 0.5 : 0.12 + (i * (0.85 - 0.12) / (boxCount - 1));
         return {
@@ -499,7 +499,7 @@ export default function MemeGeneratorPage() {
       {
         id: nextId,
         text: `TEXT BLOCK ${nextId}`,
-        fontSize: 26,
+        fontSize: 20,
         x: 0.5,
         y: 0.5
       }
