@@ -147,7 +147,7 @@ Image Pine is built with privacy at its core:
 ## ☕ Support & Author
 
 - **Website**: [https://www.imagepine.com/](https://www.imagepine.com/)
-- **Buy Us a Coffee**: [https://buymeacoffee.com/thefaisal](https://buymeacoffee.com/thefaisal)
+- **Buy Me a Coffee**: [https://buymeacoffee.com/thefaisal](https://buymeacoffee.com/thefaisal)
 - **Author**: **NexLifyy**
 
 ---
