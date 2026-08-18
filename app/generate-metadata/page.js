@@ -1096,7 +1096,7 @@ export default function GenerateMetadataPage() {
     } else if (platform === 'Vecteezy') {
       headers = ['Filename', 'Title', 'Description', 'Keywords'];
     } else if (platform === '123RF') {
-      headers = ['Filename', 'Title', 'Description', 'Keywords'];
+      headers = ['oldfilename', '123rf_filename', 'description', 'keywords', 'country'];
     } else if (platform === 'Magnific') {
       headers = ['File name', 'Title', 'Keywords', 'if generated with AI - Prompt', 'Model'];
       delimiter = ';';
@@ -1131,7 +1131,16 @@ export default function GenerateMetadataPage() {
           escapeCsv(kws),
           escapeCsv(catText)
         ].join(delimiter);
-      } else if (platform === 'Vecteezy' || platform === '123RF') {
+      } else if (platform === '123RF') {
+        const desc = description || title;
+        return [
+          escapeCsv(f.name),
+          escapeCsv(''),
+          escapeCsv(desc),
+          escapeCsv(kws),
+          escapeCsv('')
+        ].join(delimiter);
+      } else if (platform === 'Vecteezy') {
         return [
           escapeCsv(f.name),
           escapeCsv(title),
