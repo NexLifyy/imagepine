@@ -1093,6 +1093,8 @@ export default function GenerateMetadataPage() {
       headers = ['Filename', 'Title', 'Keywords', 'Category'];
     } else if (platform === 'Shutterstock') {
       headers = ['Filename', 'Description', 'Keywords', 'Categories'];
+    } else if (platform === 'Freepik') {
+      headers = ['Filename', 'Title', 'Keywords'];
     } else if (platform === 'Vecteezy') {
       headers = ['Filename', 'Title', 'Description', 'Keywords'];
     } else if (platform === '123RF') {
@@ -1101,7 +1103,7 @@ export default function GenerateMetadataPage() {
       headers = ['File name', 'Title', 'Keywords', 'if generated with AI - Prompt', 'Model'];
       delimiter = ';';
     } else if (platform === 'DepositPhotos') {
-      headers = ['Filename', 'Title', 'Description', 'Keywords', 'editorial'];
+      headers = ['Filename', 'Title', 'Description', 'Keywords', 'Editorial'];
     } else if (platform === 'iStock') {
       headers = ['file name', 'title', 'description', 'keywords', 'editorial'];
     } else if (platform === 'Pond5') {
@@ -1125,11 +1127,18 @@ export default function GenerateMetadataPage() {
         ].join(delimiter);
       } else if (platform === 'Shutterstock') {
         const catText = mapToShutterstockCategory(category);
+        const cleanDesc = description.substring(0, 200);
         return [
           escapeCsv(f.name),
-          escapeCsv(description),
+          escapeCsv(cleanDesc),
           escapeCsv(kws),
           escapeCsv(catText)
+        ].join(delimiter);
+      } else if (platform === 'Freepik') {
+        return [
+          escapeCsv(f.name),
+          escapeCsv(title),
+          escapeCsv(kws)
         ].join(delimiter);
       } else if (platform === '123RF') {
         const desc = description || title;
@@ -1464,6 +1473,7 @@ export default function GenerateMetadataPage() {
                         {[
                           'Adobe Stock',
                           'Shutterstock',
+                          'Freepik',
                           'Vecteezy',
                           '123RF',
                           'Magnific',
