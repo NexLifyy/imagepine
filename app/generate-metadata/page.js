@@ -1093,8 +1093,6 @@ export default function GenerateMetadataPage() {
       headers = ['Filename', 'Title', 'Keywords', 'Category'];
     } else if (platform === 'Shutterstock') {
       headers = ['Filename', 'Description', 'Keywords', 'Categories'];
-    } else if (platform === 'Freepik') {
-      headers = ['Filename', 'Title', 'Keywords'];
     } else if (platform === 'Vecteezy') {
       headers = ['Filename', 'Title', 'Description', 'Keywords'];
     } else if (platform === '123RF') {
@@ -1133,12 +1131,6 @@ export default function GenerateMetadataPage() {
           escapeCsv(cleanDesc),
           escapeCsv(kws),
           escapeCsv(catText)
-        ].join(delimiter);
-      } else if (platform === 'Freepik') {
-        return [
-          escapeCsv(f.name),
-          escapeCsv(title),
-          escapeCsv(kws)
         ].join(delimiter);
       } else if (platform === '123RF') {
         const desc = description || title;
@@ -1473,7 +1465,6 @@ export default function GenerateMetadataPage() {
                         {[
                           'Adobe Stock',
                           'Shutterstock',
-                          'Freepik',
                           'Vecteezy',
                           '123RF',
                           'Magnific',
