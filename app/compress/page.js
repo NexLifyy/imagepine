@@ -5,6 +5,7 @@ import UploadBox from '@/components/UploadBox';
 import { saveAs } from 'file-saver';
 import { saveHistory } from '@/lib/storage';
 import ToolPageShell from '@/components/ToolPageShell';
+import SavingsPill from '@/components/SavingsPill';
 
 const _FEATURES = [
   { icon: (<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>), title: 'Smart Compression', desc: 'Binary search finds optimal quality to hit your exact target.' },
@@ -246,13 +247,8 @@ export default function CompressPage() {
                 )}
                 {/* Size badges */}
                 {compressedBlob && !isCompressing && (
-                  <div style={{ position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 8 }}>
-                    <span style={{ background: 'rgba(255,255,255,0.95)', border: '1px solid #E4E4EF', borderRadius: 99, padding: '5px 14px', fontSize: 11, fontWeight: 700, color: '#6B6B8A', whiteSpace: 'nowrap' }}>
-                      Before: {fmt(file.size)}
-                    </span>
-                    <span style={{ background: savings > 0 ? '#DCFCE7' : '#EEF0FF', border: `1px solid ${savings > 0 ? '#BBF7D0' : '#C7C7E2'}`, borderRadius: 99, padding: '5px 14px', fontSize: 11, fontWeight: 700, color: savings > 0 ? '#16A34A' : '#5B5BD6', whiteSpace: 'nowrap' }}>
-                      After: {fmt(compressedBlob.size)}{savings > 0 ? ` · ↓${savings}%` : ''}
-                    </span>
+                  <div style={{ position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 8, alignItems: 'center', zIndex: 10 }}>
+                    <SavingsPill originalSize={file.size} compressedSize={compressedBlob.size} floating={true} />
                   </div>
                 )}
               </div>
@@ -308,17 +304,21 @@ export default function CompressPage() {
 
                 {/* Stats */}
                 {compressedBlob && !isCompressing && (
-                  <div style={{ background: savings > 0 ? '#F0FDF4' : '#F7F7FB', border: `1px solid ${savings > 0 ? '#BBF7D0' : '#E4E4EF'}`, borderRadius: 12, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {[
-                      ['Original', fmt(file.size), '#6B6B8A'],
-                      ['Compressed', fmt(compressedBlob.size), '#5B5BD6'],
-                      ['Saved', savings > 0 ? `${savings}% smaller` : 'No reduction', savings > 0 ? '#16A34A' : '#9898B5'],
-                    ].map(([l, v, c]) => (
-                      <div key={l} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 12, color: '#9898B5', fontWeight: 600 }}>{l}</span>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: c }}>{v}</span>
-                      </div>
-                    ))}
+                  <div style={{ background: savings > 0 ? '#F0FDF4' : '#F7F7FB', border: `1px solid ${savings > 0 ? '#BBF7D0' : '#E4E4EF'}`, borderRadius: 14, padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <SavingsPill originalSize={file.size} compressedSize={compressedBlob.size} size="md" style={{ width: '100%', justifyContent: 'center' }} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, borderTop: '1px solid #E4E4EF', paddingTop: 10 }}>
+                      {[
+                        ['Original Size', fmt(file.size), '#6B6B8A'],
+                        ['Compressed Size', fmt(compressedBlob.size), '#7342E6'],
+                      ].map(([l, v, c]) => (
+                        <div key={l} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: 12, color: '#9898B5', fontWeight: 600 }}>{l}</span>
+                          <span style={{ fontSize: 12, fontWeight: 800, color: c }}>{v}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 

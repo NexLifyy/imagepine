@@ -4,6 +4,7 @@ import UploadBox from '@/components/UploadBox';
 import { saveAs } from 'file-saver';
 import { saveHistory } from '@/lib/storage';
 import ToolPageShell from '@/components/ToolPageShell';
+import SavingsPill from '@/components/SavingsPill';
 
 const _FEATURES = [
   { icon: (<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>), title: 'PDF Compression', desc: 'Compress embedded images within PDF pages.' },
@@ -434,9 +435,8 @@ export default function CompressPdfPage() {
                     </div>
 
                     {getSavingsPercentage() > 0 ? (
-                      <div className="bg-green-50 border border-green-200 text-green-700 text-xs font-bold rounded-lg p-2.5 flex items-center justify-between mt-1">
-                        <span>Size Reduction:</span>
-                        <span className="font-mono font-black text-sm">-{getSavingsPercentage()}%</span>
+                      <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <SavingsPill originalSize={file.size} compressedSize={compressedBlob.size} size="md" style={{ width: '100%', justifyContent: 'center' }} />
                       </div>
                     ) : (
                       <div className="bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-semibold rounded-lg p-2.5 mt-1 leading-relaxed">

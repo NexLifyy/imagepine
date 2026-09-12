@@ -5,6 +5,7 @@ import { saveAs } from 'file-saver';
 import { saveHistory } from '@/lib/storage';
 import { getMimeForSaveFormat, getExtensionForMime, compressCanvasToBlob } from '@/lib/imageUtils';
 import ToolPageShell from '@/components/ToolPageShell';
+import SavingsPill from '@/components/SavingsPill';
 
 const _FEATURES = [
   { icon: (<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round"><rect x="2" y="2" width="9" height="9" rx="1"/><rect x="13" y="2" width="9" height="9" rx="1"/><rect x="2" y="13" width="9" height="9" rx="1"/><rect x="13" y="13" width="9" height="9" rx="1"/></svg>), title: 'Batch Processing', desc: 'Resize up to 50 images simultaneously.' },
@@ -582,16 +583,26 @@ export default function BulkResizePage() {
 
                 {/* ZIP Download Action Trigger */}
                 {resizedFiles.length > 0 && !isProcessing && (
-                  <button
-                    type="button"
-                    onClick={downloadAllAsZip}
-                    className="py-2.5 px-4 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 animate-bounce w-full"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Download Resized Images (ZIP)
-                  </button>
+                  <div className="flex flex-col gap-2.5">
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <SavingsPill
+                        originalSize={files.reduce((acc, f) => acc + (f.size || 0), 0)}
+                        compressedSize={resizedFiles.reduce((acc, f) => acc + (f.blob?.size || 0), 0)}
+                        size="md"
+                        style={{ width: '100%', justifyContent: 'center' }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={downloadAllAsZip}
+                      className="py-2.5 px-4 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 animate-bounce w-full"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Download Resized Images (ZIP)
+                    </button>
+                  </div>
                 )}
                 
               </div>

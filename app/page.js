@@ -6,6 +6,7 @@ import { saveAs } from 'file-saver';
 import { saveHistory } from '@/lib/storage';
 import { getMimeForSaveFormat, getExtensionForMime, compressCanvasToBlob } from '@/lib/imageUtils';
 import { useLanguage } from '@/lib/LanguageContext';
+import SavingsPill from '@/components/SavingsPill';
 
 
 /* ─── InputField — defined OUTSIDE Home to prevent remount on every render ── */
@@ -63,7 +64,7 @@ function SegControl({ options, value, onChange }) {
 }
 
 /* ─── Inline Before/After Slider ────────────────────────────────────────── */
-function InlineSlider({ beforeSrc, afterSrc, beforeLabel, afterLabel, saving }) {
+function InlineSlider({ beforeSrc, afterSrc, beforeLabel, afterLabel, originalSize, compressedSize }) {
   const [pos, setPos] = useState(50);
   const [containerW, setContainerW] = useState(0);
   const boxRef = useRef(null);
@@ -189,15 +190,12 @@ function InlineSlider({ beforeSrc, afterSrc, beforeLabel, afterLabel, saving }) 
       </div>
 
       {/* Savings badge */}
-      {saving > 0 && (
+      {originalSize && compressedSize && (
         <div style={{
-          position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)',
-          background: '#DCFCE7', border: '1px solid #BBF7D0',
-          borderRadius: 99, padding: '4px 12px',
-          fontSize: 11, fontWeight: 700, color: '#16A34A',
-          pointerEvents: 'none', whiteSpace: 'nowrap',
+          position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)',
+          pointerEvents: 'none', zIndex: 10,
         }}>
-          ↓ {saving}% smaller
+          <SavingsPill originalSize={originalSize} compressedSize={compressedSize} floating={true} />
         </div>
       )}
     </div>
@@ -663,8 +661,8 @@ export default function Home() {
                   <p style={{fontSize:10,fontWeight:800,color:'#9898B5',letterSpacing:'0.08em',textTransform:'uppercase',margin:0}}>
                     {viewMode==='compare'?'Before / After':'Live Preview'}
                   </p>
-                  {viewMode==='compare'&&saving>0&&(
-                    <span style={{background:'#DCFCE7',color:'#16A34A',fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:99}}>{saving}% smaller</span>
+                  {viewMode==='compare'&&selectedFile&&processedSize&&(
+                    <SavingsPill originalSize={selectedFile.size} compressedSize={processedSize} size="sm" />
                   )}
                 </div>
                 <div style={{display:'flex',gap:8,alignItems:'center'}}>
@@ -705,25 +703,31 @@ export default function Home() {
                     beforeSrc={selectedFile.preview}
                     afterLabel={`Processed · ${formatSize(processedSize)}`}
                     beforeLabel={`Original · ${formatSize(selectedFile.size)}`}
-                    saving={saving}
+                    originalSize={selectedFile.size}
+                    compressedSize={processedSize}
                   />
                 </div>
               )}
 
               {/* Output stats */}
               {processedSize&&(
-                <div style={{marginTop:14,display:'flex',gap:10,alignItems:'center',padding:'12px 16px',background:'#F0FDF4',border:'1px solid #BBF7D0',borderRadius:10}} className="animate-fade-in">
-                  <div style={{width:24,height:24,background:'#22C55E',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <div style={{marginTop:14,display:'flex',gap:12,alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',padding:'14px 18px',background:'#F0FDF4',border:'1px solid #BBF7D0',borderRadius:12}} className="animate-fade-in">
+                  <div style={{display:'flex',alignItems:'center',gap:10}}>
+                    <div style={{width:28,height:28,background:'#22C55E',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div>
+                      <p style={{fontSize:12,fontWeight:800,color:'#16A34A',margin:0}}>Output: {processedWidth} × {processedHeight} px · {formatSize(processedSize)}</p>
+                      <p style={{fontSize:11,color:'#4ADE80',fontWeight:600,margin:'2px 0 0'}}>Original: {formatSize(selectedFile.size)}</p>
+                    </div>
                   </div>
-                  <div style={{flex:1}}>
-                    <p style={{fontSize:11,fontWeight:700,color:'#16A34A',margin:0}}>Output: {processedWidth} × {processedHeight} px · {formatSize(processedSize)}</p>
-                    {saving>0&&<p style={{fontSize:10,color:'#4ADE80',fontWeight:500,margin:'1px 0 0'}}>Saved {formatSize(selectedFile.size-processedSize)} · {saving}% reduction</p>}
+                  <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+                    <SavingsPill originalSize={selectedFile.size} compressedSize={processedSize} size="md" />
+                    <button type="button" onClick={()=>{const a=document.createElement('a');a.href=processedUrl;a.download=selectedFile?.name.replace(/\.[^/.]+$/,''||'image')+'_edited';a.click();}}
+                      style={{background:'#22C55E',color:'#fff',fontSize:11,fontWeight:700,padding:'7px 16px',borderRadius:8,border:'none',cursor:'pointer',flexShrink:0,boxShadow:'0 2px 8px rgba(34,197,94,0.25)'}}>
+                      ↓ Save again
+                    </button>
                   </div>
-                  <button type="button" onClick={()=>{const a=document.createElement('a');a.href=processedUrl;a.download=selectedFile?.name.replace(/\.[^/.]+$/,''||'image')+'_edited';a.click();}}
-                    style={{background:'#22C55E',color:'#fff',fontSize:11,fontWeight:700,padding:'6px 14px',borderRadius:8,border:'none',cursor:'pointer',flexShrink:0}}>
-                    ↓ Save again
-                  </button>
                 </div>
               )}
             </div>

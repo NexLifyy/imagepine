@@ -4,6 +4,7 @@ import UploadBox from '@/components/UploadBox';
 import { saveAs } from 'file-saver';
 import { saveHistory } from '@/lib/storage';
 import ToolPageShell from '@/components/ToolPageShell';
+import SavingsPill from '@/components/SavingsPill';
 
 const _FEATURES = [
   { icon: (<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>), title: 'Smart Compression', desc: 'Binary search finds optimal quality for your target.' },
@@ -347,6 +348,11 @@ export default function CompressJpgPage() {
                     Compressed Preview
                   </h4>
                   <div style={{ border: "1.5px solid #E4E4EF", borderRadius: 14, padding: 16, minHeight: 380, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", background: "repeating-conic-gradient(#F1F1F7 0% 25%, #fff 0% 50%) 0 0 / 16px 16px" }}>
+                    {compressedBlob && (
+                      <div style={{ position: "absolute", bottom: 14, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 8, alignItems: "center", zIndex: 10 }}>
+                        <SavingsPill originalSize={file.size} compressedSize={compressedBlob.size} floating={true} />
+                      </div>
+                    )}
                     {compressedUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -433,9 +439,8 @@ export default function CompressJpgPage() {
 
                       {/* Savings Percentage Metric Tag */}
                       {getSavingsPercentage() > 0 ? (
-                        <div className="bg-green-50 border border-green-200 text-green-700 text-xs font-bold rounded-lg p-2.5 flex items-center justify-between">
-                          <span>Size Reduction:</span>
-                          <span className="font-mono font-black">-{getSavingsPercentage()}%</span>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                          <SavingsPill originalSize={file.size} compressedSize={compressedBlob.size} size="md" style={{ width: '100%', justifyContent: 'center' }} />
                         </div>
                       ) : (
                         <div className="bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-semibold rounded-lg p-2.5">
