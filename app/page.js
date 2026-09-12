@@ -64,7 +64,7 @@ function SegControl({ options, value, onChange }) {
 }
 
 /* ─── Inline Before/After Slider ────────────────────────────────────────── */
-function InlineSlider({ beforeSrc, afterSrc, beforeLabel, afterLabel, originalSize, compressedSize }) {
+function InlineSlider({ beforeSrc, afterSrc, beforeLabel, afterLabel }) {
   const [pos, setPos] = useState(50);
   const [containerW, setContainerW] = useState(0);
   const boxRef = useRef(null);
@@ -188,16 +188,6 @@ function InlineSlider({ beforeSrc, afterSrc, beforeLabel, afterLabel, originalSi
       }}>
         {beforeLabel}
       </div>
-
-      {/* Savings badge */}
-      {originalSize && compressedSize && (
-        <div style={{
-          position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)',
-          pointerEvents: 'none', zIndex: 10,
-        }}>
-          <SavingsPill originalSize={originalSize} compressedSize={compressedSize} floating={true} />
-        </div>
-      )}
     </div>
   );
 }
@@ -661,9 +651,6 @@ export default function Home() {
                   <p style={{fontSize:10,fontWeight:800,color:'#9898B5',letterSpacing:'0.08em',textTransform:'uppercase',margin:0}}>
                     {viewMode==='compare'?'Before / After':'Live Preview'}
                   </p>
-                  {viewMode==='compare'&&selectedFile&&processedSize&&(
-                    <SavingsPill originalSize={selectedFile.size} compressedSize={processedSize} size="sm" />
-                  )}
                 </div>
                 <div style={{display:'flex',gap:8,alignItems:'center'}}>
                   {selectedFile&&(
@@ -703,8 +690,6 @@ export default function Home() {
                     beforeSrc={selectedFile.preview}
                     afterLabel={`Processed · ${formatSize(processedSize)}`}
                     beforeLabel={`Original · ${formatSize(selectedFile.size)}`}
-                    originalSize={selectedFile.size}
-                    compressedSize={processedSize}
                   />
                 </div>
               )}
