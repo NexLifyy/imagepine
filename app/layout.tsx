@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import PrivacyBanner from "@/components/PrivacyBanner";
 import Footer from "@/components/Footer";
 import EmailPopup from "@/components/EmailPopup";
+import PwaRegister from "@/components/PwaRegister";
 import { LanguageProvider } from "@/lib/LanguageContext";
 import "./globals.css";
 
@@ -33,6 +34,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* PWA & Mobile Meta */}
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#5B5BD6" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Image Pine" />
+        <link rel="apple-touch-icon" href="/logo.svg" />
+
         {/* Google AdSense */}
         <script
           async
@@ -64,6 +73,7 @@ export default function RootLayout({
         }}
       >
         <LanguageProvider>
+          <PwaRegister />
           <Navbar />
           <PrivacyBanner />
           <EmailPopup />

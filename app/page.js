@@ -262,6 +262,47 @@ export default function Home() {
     accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.webp', '.svg'] },
   });
 
+  useEffect(() => {
+    const handlePaste = (e) => {
+      const activeEl = document.activeElement;
+      if (
+        activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (!e.clipboardData) return;
+
+      const items = Array.from(e.clipboardData.items || []);
+      const pastedFiles = [];
+
+      for (const item of items) {
+        if (item.kind === 'file') {
+          const file = item.getAsFile();
+          if (file && file.type?.startsWith('image/')) {
+            const ext = file.type.split('/')[1] || 'png';
+            const cleanExt = ext.replace('+xml', '');
+            const newName = file.name && file.name !== 'image.png'
+              ? file.name
+              : `pasted-image-${Date.now()}.${cleanExt}`;
+            pastedFiles.push(new File([file], newName, { type: file.type }));
+          }
+        }
+      }
+
+      if (pastedFiles.length > 0) {
+        e.preventDefault();
+        onDrop(pastedFiles);
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [onDrop]);
+
   const resetAll = () => {
     files.forEach(f => { if (f.preview) URL.revokeObjectURL(f.preview); });
     setFiles([]); setSelectedFile(null);
@@ -533,7 +574,13 @@ export default function Home() {
                 onMouseLeave={e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='0 4px 16px rgba(91,91,214,0.35)';}}>
                   {t('Select Files')}
                 </button>
-                <p style={{fontSize:13,color:'#9898B5',fontWeight:500,margin:0}}>{t('or click to select')}</p>
+                <div style={{display:'flex',alignItems:'center',gap:6,fontSize:13,color:'#9898B5',fontWeight:500}}>
+                  <span>{t('or click to select')}</span>
+                  <span style={{color:'#D1D1E4'}}>·</span>
+                  <span style={{fontSize:11,background:'#F1F1F7',border:'1px solid #E4E4EF',padding:'1px 6px',borderRadius:5,color:'#5B5BD6',fontWeight:700}}>
+                    Ctrl + V
+                  </span>
+                </div>
               </div>
             )}
             <div style={{display:'flex',gap:6,flexWrap:'wrap',justifyContent:'center'}}>

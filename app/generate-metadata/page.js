@@ -202,7 +202,60 @@ const enforceDescLength = (desc, targetLength, keywords) => {
   return refinedDesc;
 };
 
-// Helper to construct OpenRouter API Prompt
+export const STOCK_KEYWORD_PRESETS = [
+  { label: 'Adobe Stock', count: 49 },
+  { label: 'Shutterstock', count: 50 },
+  { label: 'Freepik', count: 30 },
+  { label: 'iStock', count: 40 },
+  { label: 'Standard', count: 25 },
+];
+
+export const TRADEMARK_BAN_PRESET = 'Apple, Nike, Adidas, Disney, Sony, Toyota, Gucci, Rolex, Louis Vuitton, Microsoft, Samsung, Lego, Marvel, BMW, Mercedes, Coca Cola, Pepsi';
+export const CLICHE_BAN_PRESET = 'watermark, isolated, white background, logo, text, copy space, banner, copyright, full frame';
+
+// Post-generation client-side sanitizer against forbidden/banned terms
+const sanitizeAgainstExcludeList = (title, desc, keywords, excludeString) => {
+  if (!excludeString || !excludeString.trim()) {
+    return { title: title || '', desc: desc || '', keywords: keywords || [] };
+  }
+  const bannedWords = excludeString
+    .split(/[,;\n]/)
+    .map(w => w.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (bannedWords.length === 0) {
+    return { title: title || '', desc: desc || '', keywords: keywords || [] };
+  }
+
+  const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  // Filter out any keyword that matches or contains banned words
+  const sanitizedKeywords = (keywords || []).filter(kw => {
+    const kwLower = kw.toLowerCase().trim();
+    return !bannedWords.some(banned => {
+      const regex = new RegExp(`(^|\\b)${escapeRegExp(banned)}(\\b|$)`, 'i');
+      return regex.test(kwLower);
+    });
+  });
+
+  // Strip banned words from title
+  let sanitizedTitle = title || '';
+  bannedWords.forEach(banned => {
+    const regex = new RegExp(`\\b${escapeRegExp(banned)}\\b`, 'gi');
+    sanitizedTitle = sanitizedTitle.replace(regex, '').replace(/\s{2,}/g, ' ').trim();
+  });
+
+  // Strip banned words from description
+  let sanitizedDesc = desc || '';
+  bannedWords.forEach(banned => {
+    const regex = new RegExp(`\\b${escapeRegExp(banned)}\\b`, 'gi');
+    sanitizedDesc = sanitizedDesc.replace(regex, '').replace(/\s{2,}/g, ' ').trim();
+  });
+
+  return { title: sanitizedTitle, desc: sanitizedDesc, keywords: sanitizedKeywords };
+};
+
+// Helper to construct Gemini API Prompt
 const buildPrompt = (settings) => {
   const { titleLength, descriptionLength, keywordFormat, keywordLength, includeKeywords, excludeKeywords } = settings;
 
@@ -792,6 +845,57 @@ export default function GenerateMetadataPage() {
     if (!selectedFile) setSelectedFile(sanitized[0]);
   };
 
+  const appendExcludePreset = (presetText) => {
+    setExcludeKeywords(prev => {
+      if (!prev || !prev.trim()) return presetText;
+      const existing = prev.split(',').map(s => s.trim().toLowerCase());
+      const additions = presetText.split(',').map(s => s.trim()).filter(s => !existing.includes(s.toLowerCase()));
+      return additions.length > 0 ? `${prev.trim()}, ${additions.join(', ')}` : prev;
+    });
+  };
+
+  // Global clipboard paste support (Ctrl+V / Cmd+V)
+  useEffect(() => {
+    const handlePaste = (e) => {
+      const activeEl = document.activeElement;
+      if (
+        activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (!e.clipboardData) return;
+
+      const items = Array.from(e.clipboardData.items || []);
+      const pastedFiles = [];
+
+      for (const item of items) {
+        if (item.kind === 'file') {
+          const file = item.getAsFile();
+          if (file && (file.type?.startsWith('image/') || file.type?.startsWith('video/'))) {
+            const ext = file.type.split('/')[1] || 'png';
+            const cleanExt = ext.replace('+xml', '');
+            const newName = file.name && file.name !== 'image.png'
+              ? file.name
+              : `pasted-asset-${Date.now()}.${cleanExt}`;
+            pastedFiles.push(new File([file], newName, { type: file.type }));
+          }
+        }
+      }
+
+      if (pastedFiles.length > 0) {
+        e.preventDefault();
+        handleFileSelect(pastedFiles);
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [files, selectedFile]);
+
   const removeFile = (id, e) => {
     if (e) e.stopPropagation();
     const filtered = files.filter(f => f.id !== id);
@@ -921,20 +1025,28 @@ export default function GenerateMetadataPage() {
         const content = data.choices?.[0]?.message?.content || '{}';
         const parsed = parseGrokResponse(content);
 
-        const resTitle = parsed.title || '';
-        const resDesc = parsed.description || '';
-        const resKeywords = Array.isArray(parsed.keywords) ? parsed.keywords : [];
+        const rawTitle = parsed.title || '';
+        const rawDesc = parsed.description || '';
+        const rawKeywords = Array.isArray(parsed.keywords) ? parsed.keywords : [];
         const resCategory = parsed.category ? parseInt(parsed.category, 10) : '';
 
-        const exactTitle = enforceTitleLength(resTitle, titleLength, resKeywords);
-        const exactDesc = enforceDescLength(resDesc, descriptionLength, resKeywords);
+        // 1. Post-generation client-side sanitization against banned trademarks/words
+        const sanitized = sanitizeAgainstExcludeList(rawTitle, rawDesc, rawKeywords, excludeKeywords);
+
+        // 2. Strict tag count ceiling enforcement based on agency preset or slider
+        const tagLimit = Math.max(5, Math.min(50, keywordLength || 25));
+        const finalKeywords = (sanitized.keywords || []).slice(0, tagLimit);
+
+        // 3. Length enforcement
+        const exactTitle = enforceTitleLength(sanitized.title, titleLength, finalKeywords);
+        const exactDesc = enforceDescLength(sanitized.desc, descriptionLength, finalKeywords);
 
         setMetadataMap(prev => ({
           ...prev,
           [file.id]: {
             title: exactTitle,
             description: exactDesc,
-            keywords: resKeywords,
+            keywords: finalKeywords,
             category: isNaN(resCategory) ? '' : resCategory,
             status: 'completed',
             error: ''
@@ -1908,12 +2020,37 @@ export default function GenerateMetadataPage() {
                     </div>
                   </div>
 
-                  {/* Keyword Count Constraint Slider */}
+                  {/* Keyword Count Constraint Slider & Agency Presets */}
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                       <label style={{ fontSize: 11, fontWeight: 700, color: '#6B6B8A' }}>Keywords count</label>
                       <span style={{ fontSize: 12, fontWeight: 800, color: '#7342E6' }}>{keywordLength} tags</span>
                     </div>
+
+                    {/* Stock Agency Quick Presets */}
+                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
+                      {STOCK_KEYWORD_PRESETS.map((preset) => (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          onClick={() => setKeywordLength(preset.count)}
+                          style={{
+                            fontSize: 9,
+                            fontWeight: 700,
+                            padding: '2px 7px',
+                            borderRadius: 6,
+                            border: keywordLength === preset.count ? '1px solid #7342E6' : '1px solid #E4E4EF',
+                            background: keywordLength === preset.count ? '#7342E615' : '#F7F7FB',
+                            color: keywordLength === preset.count ? '#7342E6' : '#6B6B8A',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          {preset.label} ({preset.count})
+                        </button>
+                      ))}
+                    </div>
+
                     <input 
                       type="range" 
                       min="5" 
@@ -1939,7 +2076,7 @@ export default function GenerateMetadataPage() {
                       style={{ width: '100%' }}
                     />
                     <span style={{ fontSize: 9, color: '#9898B5', display: 'block', marginTop: 4 }}>
-                      Increase this delay (e.g. 15s - 30s) if you only have a single free Groq API key to avoid 429 rate limits.
+                      Increase this delay (e.g. 15s - 30s) if you have a single free API key to avoid 429 rate limits.
                     </span>
                   </div>
 
@@ -1960,9 +2097,67 @@ export default function GenerateMetadataPage() {
                     />
                   </div>
 
-                  {/* Exclude Keywords Textarea */}
+                  {/* Exclude Keywords Textarea & Ban Presets */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    <label style={{ fontSize: 11, fontWeight: 700, color: '#6B6B8A' }}>Exclude Keywords (forbidden terms)</label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <label style={{ fontSize: 11, fontWeight: 700, color: '#6B6B8A' }}>Exclude Keywords (forbidden terms)</label>
+                      <span style={{ fontSize: 9, color: '#10B981', fontWeight: 700, background: '#10B98115', padding: '1px 6px', borderRadius: 4 }}>Auto-Sanitized</span>
+                    </div>
+
+                    {/* Preset ban chips */}
+                    <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 2 }}>
+                      <button
+                        type="button"
+                        onClick={() => appendExcludePreset(TRADEMARK_BAN_PRESET)}
+                        style={{
+                          fontSize: 9,
+                          fontWeight: 700,
+                          padding: '2px 7px',
+                          borderRadius: 6,
+                          border: '1px solid #FECACA',
+                          background: '#FEF2F2',
+                          color: '#DC2626',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        + Ban Brands
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => appendExcludePreset(CLICHE_BAN_PRESET)}
+                        style={{
+                          fontSize: 9,
+                          fontWeight: 700,
+                          padding: '2px 7px',
+                          borderRadius: 6,
+                          border: '1px solid #E4E4EF',
+                          background: '#F7F7FB',
+                          color: '#6B6B8A',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        + Ban Clichés
+                      </button>
+                      {excludeKeywords && (
+                        <button
+                          type="button"
+                          onClick={() => setExcludeKeywords('')}
+                          style={{
+                            fontSize: 9,
+                            fontWeight: 600,
+                            padding: '2px 6px',
+                            borderRadius: 6,
+                            border: 'none',
+                            background: 'transparent',
+                            color: '#9898B5',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+
                     <textarea
                       value={excludeKeywords}
                       onChange={(e) => setExcludeKeywords(e.target.value)}

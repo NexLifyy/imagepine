@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 /**
@@ -32,6 +32,48 @@ export default function UploadBox({
     },
     [onFileSelect]
   );
+
+  useEffect(() => {
+    const handlePaste = (e) => {
+      const activeEl = document.activeElement;
+      if (
+        activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (!e.clipboardData) return;
+
+      const items = Array.from(e.clipboardData.items || []);
+      const pastedFiles = [];
+
+      for (const item of items) {
+        if (item.kind === 'file') {
+          const file = item.getAsFile();
+          if (file) {
+            const ext = file.type ? file.type.split('/')[1] || 'png' : 'png';
+            const cleanExt = ext.replace('+xml', '');
+            const newName = file.name && file.name !== 'image.png'
+              ? file.name
+              : `pasted-image-${Date.now()}.${cleanExt}`;
+            const renamedFile = new File([file], newName, { type: file.type });
+            pastedFiles.push(renamedFile);
+          }
+        }
+      }
+
+      if (pastedFiles.length > 0) {
+        e.preventDefault();
+        onDrop(multiple ? pastedFiles : [pastedFiles[0]]);
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [onDrop, multiple]);
 
   const getAcceptObject = () => {
     if (!acceptedFormats?.length) return undefined;
@@ -166,9 +208,13 @@ export default function UploadBox({
           >
             {label}
           </button>
-          <p style={{ fontSize: 13, color: '#9898B5', fontWeight: 500, margin: 0 }}>
-            or drag &amp; drop here
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#9898B5', fontWeight: 500 }}>
+            <span>or drag &amp; drop</span>
+            <span style={{ color: '#D1D1E4' }}>·</span>
+            <span style={{ fontSize: 11, background: '#F1F1F7', border: '1px solid #E4E4EF', padding: '1px 6px', borderRadius: 5, color: '#5B5BD6', fontWeight: 700 }}>
+              Ctrl + V
+            </span>
+          </div>
         </div>
       )}
 
