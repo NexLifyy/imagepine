@@ -1,6 +1,6 @@
 {
-  "name": "Image Pine – 100% Client-Side Image & PDF Suite",
-  "short_name": "Image Pine",
+  "name": "ImagePine",
+  "short_name": "ImagePine",
   "description": "Free, 100% client-side image editor, resizer, compressor, converter, and PDF toolbox. Complete privacy.",
   "start_url": "/",
   "id": "/",
@@ -8,20 +8,32 @@
   "display": "standalone",
   "orientation": "any",
   "background_color": "#F7F7FB",
-  "theme_color": "#5B5BD6",
+  "theme_color": "#7342E6",
   "categories": ["utilities", "photo", "productivity"],
   "icons": [
     {
-      "src": "/logo.svg",
-      "sizes": "192x192 512x512",
-      "type": "image/svg+xml",
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/logo.svg",
+      "src": "/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ]
 }

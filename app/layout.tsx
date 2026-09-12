@@ -17,10 +17,23 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  applicationName: "ImagePine",
   title: "ImagePine – Resize, Compress, Convert & Edit Images Online",
   description:
     "Free online image editor. Resize, compress, rotate, flip and convert images instantly in your browser. No upload needed - 100% private.",
   keywords: "image resizer, image compressor, rotate image, flip image, free image editor online",
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   openGraph: {
     siteName: "ImagePine",
   },
@@ -36,11 +49,13 @@ export default function RootLayout({
       <head>
         {/* PWA & Mobile Meta */}
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#5B5BD6" />
+        <meta name="theme-color" content="#7342E6" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Image Pine" />
-        <link rel="apple-touch-icon" href="/logo.svg" />
+        <meta name="apple-mobile-web-app-title" content="ImagePine" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 
         {/* Google AdSense */}
         <script

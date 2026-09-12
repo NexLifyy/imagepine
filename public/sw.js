@@ -1,9 +1,15 @@
 // Image Pine Service Worker for Offline PWA Support
-const CACHE_NAME = 'imagepine-v1';
+const CACHE_NAME = 'imagepine-v2';
 const APP_SHELL = [
   '/',
   '/manifest.json',
-  '/logo.svg'
+  '/logo.svg',
+  '/icon-192x192.png',
+  '/icon-512x512.png',
+  '/icon-maskable-512x512.png',
+  '/apple-touch-icon.png',
+  '/favicon-32x32.png',
+  '/favicon-16x16.png'
 ];
 
 // Install: pre-cache shell assets
