@@ -59,7 +59,81 @@ const label = { fontSize: 10, fontWeight: 800, color: '#9898B5', textTransform: 
 const primaryBtn = { width: '100%', padding: '13px', fontSize: 13, fontWeight: 800, borderRadius: 12, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #5B5BD6 0%, #7C3AED 100%)', color: '#fff', boxShadow: '0 4px 14px rgba(91,91,214,0.30)', letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.18s' };
 const successBtn = { ...primaryBtn, background: 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)', boxShadow: '0 4px 14px rgba(22,163,74,0.28)' };
 
+async function compressImageFile(file, { format, quality, targetSize }) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const tempUrl = file.preview || URL.createObjectURL(file);
+    img.onload = async () => {
+      try {
+        let bestBlob = null;
+        if (format === 'image/png') {
+          let scale = quality / 100;
+          let attempts = 0;
+          const maxAttempts = 8;
+          const targetBytes = targetSize * 1024;
+          while (attempts < maxAttempts) {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+            tempCanvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+            const tempCtx = tempCanvas.getContext('2d');
+            if (tempCtx) tempCtx.drawImage(img, 0, 0, tempCanvas.width, tempCanvas.height);
+            const blob = await new Promise((res) => tempCanvas.toBlob(res, 'image/png'));
+            if (!blob) break;
+            bestBlob = blob;
+            if (blob.size <= targetBytes) break;
+            scale *= 0.8;
+            attempts++;
+          }
+          if (bestBlob && file.type === 'image/png' && bestBlob.size > file.size && quality >= 95) {
+            bestBlob = file;
+          }
+        } else {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('Canvas 2D context not available.');
+          if (format === 'image/jpeg') {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+          }
+          ctx.drawImage(img, 0, 0);
+          const targetBytes = targetSize * 1024;
+          let lo = 0.05, hi = 1.0;
+          for (let i = 0; i < 12; i++) {
+            const mid = (lo + hi) / 2;
+            const blob = await new Promise((res) => canvas.toBlob(res, format, mid));
+            if (!blob) break;
+            if (blob.size <= targetBytes) {
+              lo = mid;
+              bestBlob = blob;
+            } else {
+              hi = mid;
+            }
+            if (hi - lo < 0.01) break;
+          }
+          if (!bestBlob) {
+            bestBlob = await new Promise((res) => canvas.toBlob(res, format, quality / 100));
+          }
+        }
+        if (!file.preview) URL.revokeObjectURL(tempUrl);
+        if (!bestBlob) throw new Error('Compression failed.');
+        resolve(bestBlob);
+      } catch (err) {
+        if (!file.preview) URL.revokeObjectURL(tempUrl);
+        reject(err);
+      }
+    };
+    img.onerror = () => {
+      if (!file.preview) URL.revokeObjectURL(tempUrl);
+      reject(new Error(`Failed to load ${file.name}`));
+    };
+    img.src = tempUrl;
+  });
+}
+
 export default function CompressPage() {
+  const [files, setFiles] = useState([]);
   const [file, setFile] = useState(null);
   const [quality, setQuality] = useState(80);
   const [targetSize, setTargetSize] = useState(150);
@@ -67,110 +141,83 @@ export default function CompressPage() {
   const [compressedBlob, setCompressedBlob] = useState(null);
   const [compressedUrl, setCompressedUrl] = useState(null);
   const [isCompressing, setIsCompressing] = useState(false);
+  const [isZipping, setIsZipping] = useState(false);
+  const [zipProgress, setZipProgress] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
   const prevPreviewsRef = useRef([]);
   useEffect(() => {
-    const cur = [file?.preview].filter(Boolean);
-    prevPreviewsRef.current.filter(p => !cur.includes(p)).forEach(u => URL.revokeObjectURL(u));
+    const cur = files.map((f) => f?.preview).filter(Boolean);
+    prevPreviewsRef.current.filter((p) => !cur.includes(p)).forEach((u) => URL.revokeObjectURL(u));
     prevPreviewsRef.current = cur;
-  }, [file]);
-  useEffect(() => () => prevPreviewsRef.current.forEach(u => URL.revokeObjectURL(u)), []);
+  }, [files]);
+  useEffect(() => () => prevPreviewsRef.current.forEach((u) => URL.revokeObjectURL(u)), []);
 
   useEffect(() => {
     if (file) setTargetSize(Math.max(10, Math.round((file.size / 1024) * 0.7)));
   }, [file]);
 
   const handleFileSelect = (list) => {
-    if (list.length > 0) setFile(list[0]); else setFile(null);
+    if (list.length > 0) {
+      setFiles((prev) => {
+        const existingIds = new Set(prev.map((p) => p.id || p.name));
+        const added = list.filter((l) => !existingIds.has(l.id || l.name));
+        return [...prev, ...added];
+      });
+      if (!file) setFile(list[0]);
+    } else {
+      setFiles([]);
+      setFile(null);
+    }
     setCompressedBlob(null);
-    if (compressedUrl) { URL.revokeObjectURL(compressedUrl); setCompressedUrl(null); }
+    if (compressedUrl) {
+      URL.revokeObjectURL(compressedUrl);
+      setCompressedUrl(null);
+    }
     setErrorMsg('');
   };
 
-  // Auto-compress on any setting change
+  const removeFile = (id, e) => {
+    e.stopPropagation();
+    const target = files.find((f) => f.id === id);
+    if (target?.preview) URL.revokeObjectURL(target.preview);
+    const remaining = files.filter((f) => f.id !== id);
+    setFiles(remaining);
+    if (file?.id === id) {
+      setFile(remaining.length > 0 ? remaining[0] : null);
+      setCompressedBlob(null);
+      if (compressedUrl) {
+        URL.revokeObjectURL(compressedUrl);
+        setCompressedUrl(null);
+      }
+    }
+  };
+
+  // Auto-compress active file on any setting change
   useEffect(() => {
     if (!file) return;
     let active = true;
-    setIsCompressing(true); setErrorMsg('');
-    const img = new Image();
-    img.onload = async () => {
-      try {
-        let bestBlob = null;
-        if (format === 'image/png') {
-          // PNG Compression (by scaling dimensions since PNG canvas output is lossless)
-          let scale = quality / 100;
-          let attempts = 0;
-          const maxAttempts = 8;
-          const targetBytes = targetSize * 1024;
+    setIsCompressing(true);
+    setErrorMsg('');
 
-          while (attempts < maxAttempts && active) {
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
-            tempCanvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
-            const tempCtx = tempCanvas.getContext('2d');
-            if (tempCtx) {
-              tempCtx.drawImage(img, 0, 0, tempCanvas.width, tempCanvas.height);
-            }
-            const blob = await new Promise(res => tempCanvas.toBlob(res, 'image/png'));
-            if (!blob) break;
-
-            bestBlob = blob;
-            // If we fit target size, we stop.
-            if (blob.size <= targetBytes) {
-              break;
-            }
-            // If targetSize is not the bottleneck (or we reached maximum scale down), we stop.
-            scale *= 0.8;
-            attempts++;
-          }
-          // Safeguard: if input is PNG, and output is PNG, and size increased, and quality was set to 100 (or close to it)
-          if (bestBlob && file.type === 'image/png' && bestBlob.size > file.size && quality >= 95) {
-            bestBlob = file;
-          }
-        } else {
-          // JPEG/WebP Compression (lossy via quality parameter)
-          const canvas = document.createElement('canvas');
-          canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) throw new Error('Canvas 2D context not available.');
-
-          // Fill white background for JPEG since it doesn't support transparency
-          if (format === 'image/jpeg') {
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-          }
-
-          ctx.drawImage(img, 0, 0);
-
-          const targetBytes = targetSize * 1024;
-          // Binary search for quality to fit target size
-          let lo = 0.05, hi = 1.0;
-          for (let i = 0; i < 12; i++) {
-            const mid = (lo + hi) / 2;
-            const blob = await new Promise(res => canvas.toBlob(res, format, mid));
-            if (!blob) break;
-            if (blob.size <= targetBytes) { lo = mid; bestBlob = blob; }
-            else hi = mid;
-            if (hi - lo < 0.01) break;
-          }
-          // fallback to quality slider if binary search couldn't fit target
-          if (!bestBlob) {
-            bestBlob = await new Promise(res => canvas.toBlob(res, format, quality / 100));
-          }
-        }
-
-        if (!bestBlob) throw new Error('Compression failed.');
+    compressImageFile(file, { format, quality, targetSize })
+      .then((blob) => {
         if (!active) return;
         if (compressedUrl) URL.revokeObjectURL(compressedUrl);
-        const url = URL.createObjectURL(bestBlob);
-        setCompressedBlob(bestBlob); setCompressedUrl(url);
-      } catch (e) { if (active) setErrorMsg(e.message); }
-      finally { if (active) setIsCompressing(false); }
+        const url = URL.createObjectURL(blob);
+        setCompressedBlob(blob);
+        setCompressedUrl(url);
+      })
+      .catch((e) => {
+        if (active) setErrorMsg(e.message || 'Compression failed');
+      })
+      .finally(() => {
+        if (active) setIsCompressing(false);
+      });
+
+    return () => {
+      active = false;
     };
-    img.onerror = () => { if (active) { setErrorMsg('Failed to load image.'); setIsCompressing(false); } };
-    img.src = file.preview || URL.createObjectURL(file);
-    return () => { active = false; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file, targetSize, quality, format]);
 
@@ -184,6 +231,46 @@ export default function CompressPage() {
     saveHistory('Image Compressor', `${name} (${fmt(compressedBlob.size)})`);
   };
 
+  const downloadAllAsZip = async () => {
+    if (files.length === 0) return;
+    setIsZipping(true);
+    setZipProgress(`Preparing archive...`);
+    try {
+      const JSZipModule = await import('jszip');
+      const JSZip = JSZipModule.default || JSZipModule;
+      const zip = new JSZip();
+
+      for (let i = 0; i < files.length; i++) {
+        const item = files[i];
+        setZipProgress(`Compressing ${i + 1} of ${files.length}...`);
+
+        let blob;
+        if (item.id === file?.id && compressedBlob) {
+          blob = compressedBlob;
+        } else {
+          blob = await compressImageFile(item, { format, quality, targetSize });
+        }
+
+        const ext = format === 'image/png' ? 'png' : format === 'image/webp' ? 'webp' : 'jpg';
+        const baseName = item.name.replace(/\.[^/.]+$/, '');
+        const outputName = `${baseName}_compressed.${ext}`;
+        zip.file(outputName, blob);
+      }
+
+      setZipProgress('Building ZIP...');
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      saveAs(zipBlob, 'compressed-images.zip');
+      saveHistory('Image Compressor', `compressed-images.zip (${files.length} images)`);
+      setZipProgress('');
+    } catch (err) {
+      console.error(err);
+      setErrorMsg('Failed to create ZIP: ' + (err.message || 'Unknown error'));
+    } finally {
+      setIsZipping(false);
+      setZipProgress('');
+    }
+  };
+
   const savings = file && compressedBlob ? Math.max(0, Math.round(((file.size - compressedBlob.size) / file.size) * 100)) : 0;
   const originalKb = file ? Math.ceil(file.size / 1024) : 1000;
 
@@ -194,10 +281,10 @@ export default function CompressPage() {
       features={_FEATURES} steps={_STEPS} faqs={_FAQS}
       seoText="Compress images online for free. Reduce JPG, PNG and WebP sizes by up to 80% with adjustable quality. Browser-based, no uploads."
     >
-      {!file ? (
+      {files.length === 0 ? (
         /* ── Upload State ───────────────────────────────────────────── */
         <div style={{ maxWidth: 680, margin: '0 auto', width: '100%' }}>
-          <UploadBox onFileSelect={handleFileSelect} acceptedFormats={['.jpg', '.jpeg', '.png', '.webp']} multiple={false} />
+          <UploadBox onFileSelect={handleFileSelect} acceptedFormats={['.jpg', '.jpeg', '.png', '.webp']} multiple={true} />
         </div>
       ) : (
         /* ── Workspace ─────────────────────────────────────────── */
@@ -205,6 +292,49 @@ export default function CompressPage() {
 
           {/* LEFT: big preview */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* Multi-file queue strip */}
+            {files.length > 1 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflowX: 'auto', padding: '4px 2px', scrollbarWidth: 'thin' }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: '#9898B5', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
+                  Queue ({files.length}):
+                </span>
+                {files.map((f) => {
+                  const isSelected = f.id === file?.id;
+                  return (
+                    <div
+                      key={f.id}
+                      onClick={() => setFile(f)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '6px 12px',
+                        borderRadius: 9,
+                        background: isSelected ? '#EDEDFB' : '#FFFFFF',
+                        border: `1.5px solid ${isSelected ? '#5B5BD6' : '#E4E4EF'}`,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        transition: 'all 0.15s ease',
+                        boxShadow: isSelected ? '0 2px 8px rgba(91,91,214,0.15)' : 'none',
+                      }}
+                    >
+                      <span style={{ fontSize: 11, fontWeight: isSelected ? 800 : 600, color: isSelected ? '#5B5BD6' : '#111128', maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {f.name}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => removeFile(f.id, e)}
+                        style={{ background: 'none', border: 'none', color: isSelected ? '#5B5BD6' : '#9898B5', cursor: 'pointer', padding: '0 2px', fontSize: 14, fontWeight: 700, lineHeight: 1 }}
+                        title="Remove from queue"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             {/* Image preview card */}
             <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
               {/* File info bar */}
@@ -219,9 +349,11 @@ export default function CompressPage() {
                     <p style={{ fontSize: 11, color: '#9898B5', margin: '2px 0 0', fontWeight: 500 }}>Original: {fmt(file.size)}</p>
                   </div>
                 </div>
-                <button onClick={() => handleFileSelect([])} style={{ fontSize: 11, fontWeight: 700, color: '#EF4444', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 10px', borderRadius: 8, background: '#FEF2F2' }}>
-                  Change File
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <button onClick={() => handleFileSelect([])} style={{ fontSize: 11, fontWeight: 700, color: '#EF4444', border: 'none', cursor: 'pointer', padding: '6px 10px', borderRadius: 8, background: '#FEF2F2' }}>
+                    Clear All
+                  </button>
+                </div>
               </div>
               {/* Image preview */}
               <div style={{
@@ -264,12 +396,14 @@ export default function CompressPage() {
               </div>
             </div>
 
-            {/* Results bar below image */}
+            {/* Results bar below image with Copy button */}
             {compressedBlob && !isCompressing && (
               <ImageResultBar
                 originalSize={file.size}
                 compressedSize={compressedBlob.size}
                 label="Compressed"
+                imageBlob={compressedBlob}
+                imageUrl={compressedUrl}
                 onDownload={download}
                 downloadLabel="Download"
               />
@@ -329,14 +463,55 @@ export default function CompressPage() {
                   </div>
                 )}
 
-                {/* Download */}
-                <button onClick={download} disabled={isCompressing || !compressedBlob}
-                  style={{ ...successBtn, opacity: (isCompressing || !compressedBlob) ? 0.5 : 1, cursor: (isCompressing || !compressedBlob) ? 'not-allowed' : 'pointer' }}
-                  onMouseEnter={e => { if (compressedBlob) e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = ''; }}>
-                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                  Download Compressed Image
-                </button>
+                {/* Download Actions */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <button
+                    onClick={download}
+                    disabled={isCompressing || !compressedBlob || isZipping}
+                    style={{
+                      ...successBtn,
+                      opacity: (isCompressing || !compressedBlob || isZipping) ? 0.5 : 1,
+                      cursor: (isCompressing || !compressedBlob || isZipping) ? 'not-allowed' : 'pointer',
+                    }}
+                    onMouseEnter={e => { if (compressedBlob && !isZipping) e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
+                  >
+                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    {files.length > 1 ? `Download Current (${file.name.slice(0, 14)})` : 'Download Compressed Image'}
+                  </button>
+
+                  {files.length > 1 && (
+                    <button
+                      onClick={downloadAllAsZip}
+                      disabled={isZipping || isCompressing}
+                      style={{
+                        ...primaryBtn,
+                        background: 'linear-gradient(135deg, #7342E6 0%, #9333EA 100%)',
+                        opacity: (isZipping || isCompressing) ? 0.6 : 1,
+                        cursor: (isZipping || isCompressing) ? 'not-allowed' : 'pointer',
+                      }}
+                      onMouseEnter={e => { if (!isZipping) e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = ''; }}
+                    >
+                      {isZipping ? (
+                        <>
+                          <svg style={{ animation: 'spin 0.8s linear infinite', width: 16, height: 16 }} fill="none" viewBox="0 0 24 24">
+                            <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="#fff" strokeWidth="4" />
+                            <path style={{ opacity: 0.9 }} fill="#fff" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          {zipProgress || 'Creating ZIP...'}
+                        </>
+                      ) : (
+                        <>
+                          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                          </svg>
+                          📦 Download All as ZIP ({files.length} images)
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

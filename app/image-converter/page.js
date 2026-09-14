@@ -5,6 +5,145 @@ import { saveAs } from 'file-saver';
 import { saveHistory } from '@/lib/storage';
 import ConverterDetails from '@/components/ConverterDetails';
 import ToolPageShell from '@/components/ToolPageShell';
+import ImageResultBar from '@/components/ImageResultBar';
+
+async function convertSingleImage(inputFile, options) {
+  const {
+    targetFormat,
+    quality,
+    resizeMode,
+    customWidth,
+    customHeight,
+    icoFavicon,
+    icoSize,
+    svgColorMode,
+  } = options;
+
+  let sourceCanvas = null;
+  let originalW = 0;
+  let originalH = 0;
+
+  const isTiff = inputFile.name.toLowerCase().endsWith('.tiff') || inputFile.name.toLowerCase().endsWith('.tif');
+
+  if (isTiff) {
+    const arrayBuffer = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = () => reject(new Error('Failed to read TIFF file.'));
+      reader.readAsArrayBuffer(inputFile);
+    });
+
+    const utifModule = await import('utif');
+    const UTIF = utifModule.default || utifModule;
+    const ifds = UTIF.decode(arrayBuffer);
+    if (!ifds || ifds.length === 0) throw new Error('Invalid TIFF structure.');
+    UTIF.decodeImage(arrayBuffer, ifds[0]);
+    const rgba = UTIF.toRGBA8(ifds[0]);
+    originalW = ifds[0].width;
+    originalH = ifds[0].height;
+
+    sourceCanvas = document.createElement('canvas');
+    sourceCanvas.width = originalW;
+    sourceCanvas.height = originalH;
+    const sCtx = sourceCanvas.getContext('2d');
+    if (!sCtx) throw new Error('Canvas context not available.');
+    const imgData = sCtx.createImageData(originalW, originalH);
+    imgData.data.set(rgba);
+    sCtx.putImageData(imgData, 0, 0);
+  } else {
+    await new Promise((resolve, reject) => {
+      const img = new Image();
+      const tempUrl = inputFile.preview || URL.createObjectURL(inputFile);
+      img.onload = () => {
+        originalW = img.naturalWidth || img.width;
+        originalH = img.naturalHeight || img.height;
+        sourceCanvas = document.createElement('canvas');
+        sourceCanvas.width = originalW;
+        sourceCanvas.height = originalH;
+        const sCtx = sourceCanvas.getContext('2d');
+        if (sCtx) {
+          sCtx.drawImage(img, 0, 0);
+          if (!inputFile.preview) URL.revokeObjectURL(tempUrl);
+          resolve();
+        } else {
+          if (!inputFile.preview) URL.revokeObjectURL(tempUrl);
+          reject(new Error('Canvas context not available.'));
+        }
+      };
+      img.onerror = () => {
+        if (!inputFile.preview) URL.revokeObjectURL(tempUrl);
+        reject(new Error(`Failed to load ${inputFile.name}`));
+      };
+      img.src = tempUrl;
+    });
+  }
+
+  const canvas = document.createElement('canvas');
+  let w = originalW;
+  let h = originalH;
+
+  if (targetFormat === 'image/x-icon') {
+    if (icoFavicon) {
+      w = 16;
+      h = 16;
+    } else {
+      const dims = icoSize.split('x');
+      w = parseInt(dims[0], 10) || 32;
+      h = parseInt(dims[1], 10) || 32;
+    }
+  } else if (resizeMode === 'custom') {
+    const numW = parseInt(customWidth, 10);
+    const numH = parseInt(customHeight, 10);
+    if (!isNaN(numW) && !isNaN(numH)) {
+      w = numW;
+      h = numH;
+    } else if (!isNaN(numW)) {
+      h = Math.round(h * (numW / w));
+      w = numW;
+    } else if (!isNaN(numH)) {
+      w = Math.round(w * (numH / h));
+      h = numH;
+    }
+  }
+
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas 2D context not available.');
+
+  if (targetFormat === 'image/jpeg' || targetFormat === 'image/bmp') {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  ctx.drawImage(sourceCanvas, 0, 0, w, h);
+
+  if (targetFormat === 'image/svg+xml' && svgColorMode === 'bw') {
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imgData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const v = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2] >= 128) ? 255 : 0;
+      data[i] = v;
+      data[i + 1] = v;
+      data[i + 2] = v;
+    }
+    ctx.putImageData(imgData, 0, 0);
+  }
+
+  let finalDataUrl = '';
+  if (targetFormat === 'image/svg+xml') {
+    const base64Data = canvas.toDataURL('image/png');
+    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+  <image href="${base64Data}" width="${w}" height="${h}" />
+</svg>`;
+    finalDataUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgContent)));
+  } else {
+    const qualityParam = (targetFormat === 'image/jpeg' || targetFormat === 'image/webp') ? (quality / 100) : undefined;
+    finalDataUrl = canvas.toDataURL(targetFormat === 'image/x-icon' ? 'image/png' : targetFormat, qualityParam);
+  }
+
+  return { dataUrl: finalDataUrl, width: w, height: h };
+}
 
 const _FEATURES = [
   { icon: (<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round"><path d="M8 3l4 4-4 4M16 21l-4-4 4-4"/><path d="M12 7H5a2 2 0 00-2 2v2M12 17h7a2 2 0 002-2v-2"/></svg>), title: 'All Formats', desc: 'Convert between JPEG, PNG, WebP, GIF and SVG.' },
@@ -49,6 +188,7 @@ const _FAQS = [
 ];
 
 export default function ImageConverterPage() {
+  const [files, setFiles] = useState([]);
   const [file, setFile] = useState(null);
   const [targetFormat, setTargetFormat] = useState('image/jpeg'); // 'image/jpeg' | 'image/png' | 'image/webp' | 'image/bmp' | 'image/gif' | 'image/x-icon' | 'image/svg+xml'
   const [quality, setQuality] = useState(80); // 5 to 100
@@ -77,16 +217,18 @@ export default function ImageConverterPage() {
   // Output states
   const [convertedDataUrl, setConvertedDataUrl] = useState(null);
   const [isConverting, setIsConverting] = useState(false);
+  const [isZipping, setIsZipping] = useState(false);
+  const [zipProgress, setZipProgress] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
   // Manage object URLs lifetime safely to prevent memory leaks and premature revocation
   const prevPreviewsRef = useRef([]);
   useEffect(() => {
-    const currentPreviews = [file?.preview].filter(Boolean);
+    const currentPreviews = files.map(f => f?.preview).filter(Boolean);
     const removedPreviews = prevPreviewsRef.current.filter(p => !currentPreviews.includes(p));
     removedPreviews.forEach(url => URL.revokeObjectURL(url));
     prevPreviewsRef.current = currentPreviews;
-  }, [file]);
+  }, [files]);
 
   useEffect(() => {
     return () => {
@@ -97,15 +239,33 @@ export default function ImageConverterPage() {
   // Handle file select from UploadBox
   const handleFileSelect = (selectedList) => {
     if (selectedList.length > 0) {
-      setFile(selectedList[0]);
+      setFiles(prev => {
+        const existingIds = new Set(prev.map(p => p.id || p.name));
+        const added = selectedList.filter(l => !existingIds.has(l.id || l.name));
+        return [...prev, ...added];
+      });
+      if (!file) setFile(selectedList[0]);
     } else {
+      setFiles([]);
       setFile(null);
     }
     setConvertedDataUrl(null);
     setErrorMsg('');
   };
 
-  // Convert image live using canvas toDataURL whenever conversion parameters change
+  const removeFile = (id, e) => {
+    if (e) e.stopPropagation();
+    const target = files.find(f => f.id === id);
+    if (target?.preview) URL.revokeObjectURL(target.preview);
+    const remaining = files.filter(f => f.id !== id);
+    setFiles(remaining);
+    if (file?.id === id) {
+      setFile(remaining.length > 0 ? remaining[0] : null);
+      setConvertedDataUrl(null);
+    }
+  };
+
+  // Convert active image live whenever conversion parameters change
   useEffect(() => {
     if (!file) return;
 
@@ -113,160 +273,27 @@ export default function ImageConverterPage() {
     setIsConverting(true);
     setErrorMsg('');
 
-    const runConversion = async () => {
-      try {
-        let sourceCanvas = null;
-        let originalW = 0;
-        let originalH = 0;
-
-        const isTiff = file.name.toLowerCase().endsWith('.tiff') || file.name.toLowerCase().endsWith('.tif');
-
-        if (isTiff) {
-          // Read TIFF file
-          const arrayBuffer = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result);
-            reader.onerror = () => reject(new Error('Failed to read TIFF file.'));
-            reader.readAsArrayBuffer(file);
-          });
-
-          // Load UTIF
-          const utifModule = await import('utif');
-          const UTIF = utifModule.default || utifModule;
-
-          // Decode
-          const ifds = UTIF.decode(arrayBuffer);
-          if (!ifds || ifds.length === 0) {
-            throw new Error('Invalid TIFF structure.');
-          }
-          UTIF.decodeImage(arrayBuffer, ifds[0]);
-          const rgba = UTIF.toRGBA8(ifds[0]);
-
-          originalW = ifds[0].width;
-          originalH = ifds[0].height;
-
-          sourceCanvas = document.createElement('canvas');
-          sourceCanvas.width = originalW;
-          sourceCanvas.height = originalH;
-          const sCtx = sourceCanvas.getContext('2d');
-          if (!sCtx) throw new Error('Canvas context not available.');
-          const imgData = sCtx.createImageData(originalW, originalH);
-          imgData.data.set(rgba);
-          sCtx.putImageData(imgData, 0, 0);
-        } else {
-          // Load image standardly
-          await new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => {
-              originalW = img.naturalWidth || img.width;
-              originalH = img.naturalHeight || img.height;
-
-              sourceCanvas = document.createElement('canvas');
-              sourceCanvas.width = originalW;
-              sourceCanvas.height = originalH;
-              const sCtx = sourceCanvas.getContext('2d');
-              if (sCtx) {
-                sCtx.drawImage(img, 0, 0);
-                resolve();
-              } else {
-                reject(new Error('Canvas context not available.'));
-              }
-            };
-            img.onerror = () => reject(new Error('Failed to load image source.'));
-            img.src = file.preview || URL.createObjectURL(file);
-          });
-        }
-
+    convertSingleImage(file, {
+      targetFormat,
+      quality,
+      resizeMode,
+      customWidth,
+      customHeight,
+      icoFavicon,
+      icoSize,
+      svgColorMode,
+    })
+      .then(res => {
         if (!active) return;
-
-        // Now run the canvas-based transformations (resizing, keying, filters)
-        const canvas = document.createElement('canvas');
-        let w = originalW;
-        let h = originalH;
-
-        // Handle resizing
-        if (targetFormat === 'image/x-icon') {
-          if (icoFavicon) {
-            w = 16;
-            h = 16;
-          } else {
-            const dims = icoSize.split('x');
-            w = parseInt(dims[0], 10) || 32;
-            h = parseInt(dims[1], 10) || 32;
-          }
-        } else if (resizeMode === 'custom') {
-          const numW = parseInt(customWidth, 10);
-          const numH = parseInt(customHeight, 10);
-          if (!isNaN(numW) && !isNaN(numH)) {
-            w = numW;
-            h = numH;
-          } else if (!isNaN(numW)) {
-            h = Math.round(h * (numW / w));
-            w = numW;
-          } else if (!isNaN(numH)) {
-            w = Math.round(w * (numH / h));
-            h = numH;
-          }
-        }
-
-        canvas.width = w;
-        canvas.height = h;
-        
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          throw new Error('Canvas 2D context not available.');
-        }
-
-        // Fill white background for JPEG/BMP targets if source has transparency
-        if (targetFormat === 'image/jpeg' || targetFormat === 'image/bmp') {
-          ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        // Draw sourceCanvas onto target canvas
-        ctx.drawImage(sourceCanvas, 0, 0, w, h);
-
-        // Apply B&W filter if SVG color mode is B&W
-        if (targetFormat === 'image/svg+xml' && svgColorMode === 'bw') {
-          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const data = imgData.data;
-          for (let i = 0; i < data.length; i += 4) {
-            const v = (0.2126 * data[i] + 0.7152 * data[i+1] + 0.0722 * data[i+2] >= 128) ? 255 : 0;
-            data[i] = v;
-            data[i+1] = v;
-            data[i+2] = v;
-          }
-          ctx.putImageData(imgData, 0, 0);
-        }
-
-
-
-        // Export data URL depending on format
-        let finalDataUrl = '';
-        if (targetFormat === 'image/svg+xml') {
-          const base64Data = canvas.toDataURL('image/png');
-          const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-  <image href="${base64Data}" width="${w}" height="${h}" />
-</svg>`;
-          finalDataUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgContent)));
-        } else {
-          const qualityParam = (targetFormat === 'image/jpeg' || targetFormat === 'image/webp') ? (quality / 100) : undefined;
-          finalDataUrl = canvas.toDataURL(targetFormat === 'image/x-icon' ? 'image/png' : targetFormat, qualityParam);
-        }
-
-        if (!active) return;
-        setConvertedDataUrl(finalDataUrl);
+        setConvertedDataUrl(res.dataUrl);
         setIsConverting(false);
-      } catch (err) {
-        if (active) {
-          console.error(err);
-          setErrorMsg(err.message || 'Error occurred during image conversion.');
-          setIsConverting(false);
-        }
-      }
-    };
-
-    runConversion();
+      })
+      .catch(err => {
+        if (!active) return;
+        console.error(err);
+        setErrorMsg(err.message || 'Error occurred during image conversion.');
+        setIsConverting(false);
+      });
 
     return () => {
       active = false;
@@ -282,6 +309,65 @@ export default function ImageConverterPage() {
     icoSize,
     svgColorMode
   ]);
+
+  const downloadAllAsZip = async () => {
+    if (files.length === 0) return;
+    setIsZipping(true);
+    setZipProgress('Preparing archive...');
+    try {
+      const JSZipModule = await import('jszip');
+      const JSZip = JSZipModule.default || JSZipModule;
+      const zip = new JSZip();
+
+      for (let i = 0; i < files.length; i++) {
+        const item = files[i];
+        setZipProgress(`Converting ${i + 1} of ${files.length}...`);
+
+        let dataUrl;
+        if (item.id === file?.id && convertedDataUrl) {
+          dataUrl = convertedDataUrl;
+        } else {
+          const res = await convertSingleImage(item, {
+            targetFormat,
+            quality,
+            resizeMode,
+            customWidth,
+            customHeight,
+            icoFavicon,
+            icoSize,
+            svgColorMode,
+          });
+          dataUrl = res.dataUrl;
+        }
+
+        let extension = 'jpg';
+        if (targetFormat === 'image/png') extension = 'png';
+        if (targetFormat === 'image/webp') extension = 'webp';
+        if (targetFormat === 'image/bmp') extension = 'bmp';
+        if (targetFormat === 'image/gif') extension = 'gif';
+        if (targetFormat === 'image/x-icon') extension = 'ico';
+        if (targetFormat === 'image/svg+xml') extension = 'svg';
+
+        const baseName = item.name.replace(/\.[^/.]+$/, '');
+        const outputName = `${baseName}_converted.${extension}`;
+
+        const base64Data = dataUrl.split(',')[1];
+        zip.file(outputName, base64Data, { base64: true });
+      }
+
+      setZipProgress('Building ZIP...');
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      saveAs(zipBlob, 'converted-images.zip');
+      saveHistory('Image Converter', `converted-images.zip (${files.length} images)`);
+      setZipProgress('');
+    } catch (err) {
+      console.error(err);
+      setErrorMsg('Failed to create ZIP: ' + (err.message || 'Unknown error'));
+    } finally {
+      setIsZipping(false);
+      setZipProgress('');
+    }
+  };
 
   // Calculate size from base64 data URL
   const getConvertedSize = () => {
@@ -369,92 +455,136 @@ export default function ImageConverterPage() {
       <div className="flex flex-col gap-6">
         {/* Workspace */}
         {/* Conditional Workspace */}
-        {!file ? (
+        {files.length === 0 ? (
           /* Initial Upload Box View */
           <div style={{ maxWidth: 680, margin: '0 auto', width: '100%' }}>
             <UploadBox 
               onFileSelect={handleFileSelect} 
               acceptedFormats={['.jpg', '.jpeg', '.png', '.webp', '.bmp', '.gif', '.svg', '.avif', '.tiff', '.tif']}
-              multiple={false} 
+              multiple={true} 
             />
           </div>
         ) : (
           /* Active Studio Grid */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            {/* Left Column: File Details */}
+            {/* Left Column: File Details / Queue */}
             <div className="lg:col-span-3" style={{ background: "#fff", border: "1px solid #E4E4EF", borderRadius: 20, padding: "20px", boxShadow: "0 2px 12px rgba(0,0,0,0.04)", height: "fit-content", display: "flex", flexDirection: "column", gap: 14 }}>
               <div className="flex justify-between items-center pb-2 border-b border-bordercolor">
                 <h3 style={{ fontSize: 10, fontWeight: 800, color: "#9898B5", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  Uploaded File
+                  {files.length > 1 ? `Queue (${files.length})` : 'Uploaded File'}
                 </h3>
                 <button
                   onClick={() => handleFileSelect([])}
                   className="text-xs font-bold text-red-500 hover:underline"
                 >
-                  Remove
+                  Clear All
                 </button>
               </div>
 
-              {/* Uploaded file preview info */}
-              <div className="p-3 bg-lightbg/45 border border-bordercolor/60 rounded-xl flex items-center gap-3">
-                {file.preview && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={file.preview}
-                    alt="Original Thumb"
-                    className="w-12 h-12 object-cover rounded-lg border border-bordercolor"
-                  />
-                )}
-                <div className="min-w-0 flex-grow">
-                  <p className="text-xs font-bold text-textmain truncate" title={file.name}>
-                    {file.name}
-                  </p>
-                  <p className="text-[10px] text-gray-400 font-medium mt-0.5">
-                    Original Size: {formatSize(file.size)}
-                  </p>
-                </div>
+              {/* Uploaded files list */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 380, overflowY: 'auto' }}>
+                {files.map((f) => {
+                  const isSelected = f.id === file?.id;
+                  return (
+                    <div
+                      key={f.id}
+                      onClick={() => setFile(f)}
+                      className={`p-2.5 rounded-xl flex items-center gap-2.5 cursor-pointer transition-all border ${
+                        isSelected
+                          ? 'bg-primary/5 border-primary shadow-xs'
+                          : 'bg-lightbg/40 border-bordercolor/60 hover:border-gray-300'
+                      }`}
+                    >
+                      {f.preview && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={f.preview}
+                          alt="Thumb"
+                          className="w-10 h-10 object-cover rounded-lg border border-bordercolor shrink-0"
+                        />
+                      )}
+                      <div className="min-w-0 flex-grow">
+                        <p className={`text-xs font-bold truncate ${isSelected ? 'text-primary' : 'text-textmain'}`} title={f.name}>
+                          {f.name}
+                        </p>
+                        <p className="text-[10px] text-gray-400 font-medium mt-0.5">
+                          {formatSize(f.size)}
+                        </p>
+                      </div>
+                      {files.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={(e) => removeFile(f.id, e)}
+                          className="text-gray-400 hover:text-red-500 text-sm font-bold px-1.5 leading-none transition-colors"
+                          title="Remove image"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
             {/* Middle Column: Large Preview */}
             <div className="lg:col-span-6" style={{ background: "#fff", border: "1px solid #E4E4EF", borderRadius: 20, padding: "24px", boxShadow: "0 2px 12px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column", gap: 14 }}>
-              <h4 style={{ fontSize: 10, fontWeight: 800, color: "#9898B5", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                    Converted Preview
-                  </h4>
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', padding: '10px 0' }}>
-                    <div style={{
-                      position: "relative",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      maxWidth: "100%",
-                      maxHeight: 480,
-                      borderRadius: 14,
-                      overflow: "hidden",
-                      border: "1.5px solid #E4E4EF",
-                      background: "#FFFFFF",
-                      boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-                      lineHeight: 0,
-                    }}>
-                      {convertedDataUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={convertedDataUrl}
-                          alt="Converted Preview"
-                          style={{ maxHeight: 480, maxWidth: "100%", width: "auto", height: "auto", objectFit: "contain", display: "block" }}
-                        />
-                      ) : (
-                        <div style={{ padding: "40px 60px" }} className="flex items-center gap-1.5 text-xs text-primary font-semibold">
-                          <svg className="animate-spin h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                          </svg>
-                          Converting...
-                        </div>
-                      )}
+              <div className="flex justify-between items-center">
+                <h4 style={{ fontSize: 10, fontWeight: 800, color: "#9898B5", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                  Converted Preview
+                </h4>
+                {file && (
+                  <span className="text-[11px] font-semibold text-gray-500 truncate max-w-[220px]">
+                    {file.name}
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', padding: '10px 0' }}>
+                <div style={{
+                  position: "relative",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  maxWidth: "100%",
+                  maxHeight: 480,
+                  borderRadius: 14,
+                  overflow: "hidden",
+                  border: "1.5px solid #E4E4EF",
+                  background: "#FFFFFF",
+                  boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                  lineHeight: 0,
+                }}>
+                  {convertedDataUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={convertedDataUrl}
+                      alt="Converted Preview"
+                      style={{ maxHeight: 480, maxWidth: "100%", width: "auto", height: "auto", objectFit: "contain", display: "block" }}
+                    />
+                  ) : (
+                    <div style={{ padding: "40px 60px" }} className="flex items-center gap-1.5 text-xs text-primary font-semibold">
+                      <svg className="animate-spin h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Converting...
                     </div>
-                  </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Clean Result Bar with Copy & Download */}
+              {convertedDataUrl && !isConverting && (
+                <ImageResultBar
+                  originalSize={file?.size}
+                  compressedSize={getConvertedSize()}
+                  label={`Converted (${getFormatLabel(targetFormat)})`}
+                  imageUrl={convertedDataUrl}
+                  onDownload={downloadConvertedImage}
+                  downloadLabel="Download Image"
+                />
+              )}
             </div>
 
             {/* Right Column: Controls & Settings */}
@@ -767,19 +897,77 @@ export default function ImageConverterPage() {
                     </p>
                   )}
 
-                  {/* Action Button */}
-                  <div className="pt-3 border-t border-bordercolor/60">
+                  {/* Action Buttons */}
+                  <div className="pt-3 border-t border-bordercolor/60 flex flex-col gap-2.5">
                     <button
                       type="button"
                       onClick={downloadConvertedImage}
                       disabled={isConverting || !convertedDataUrl}
-                      style={{ width: "100%", padding: "13px", fontSize: 13, fontWeight: 800, borderRadius: 12, border: "none", cursor: "pointer", background: "linear-gradient(135deg, #5B5BD6 0%, #7C3AED 100%)", color: "#fff", boxShadow: "0 4px 14px rgba(91,91,214,0.30)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all 0.18s" }}
+                      style={{
+                        width: "100%",
+                        padding: "13px",
+                        fontSize: 13,
+                        fontWeight: 800,
+                        borderRadius: 12,
+                        border: "none",
+                        cursor: (isConverting || !convertedDataUrl) ? "not-allowed" : "pointer",
+                        background: "linear-gradient(135deg, #5B5BD6 0%, #7C3AED 100%)",
+                        color: "#fff",
+                        boxShadow: "0 4px 14px rgba(91,91,214,0.30)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 8,
+                        transition: "all 0.18s",
+                        opacity: (isConverting || !convertedDataUrl) ? 0.6 : 1,
+                      }}
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                       </svg>
                       Download Converted Image
                     </button>
+
+                    {files.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={downloadAllAsZip}
+                        disabled={isZipping || isConverting}
+                        style={{
+                          width: "100%",
+                          padding: "12px",
+                          fontSize: 13,
+                          fontWeight: 800,
+                          borderRadius: 12,
+                          border: "1.5px solid #E4E4EF",
+                          cursor: (isZipping || isConverting) ? "not-allowed" : "pointer",
+                          background: "#F8F8FC",
+                          color: "#1E1E38",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 8,
+                          transition: "all 0.18s",
+                        }}
+                      >
+                        {isZipping ? (
+                          <>
+                            <svg className="animate-spin h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            {zipProgress || 'Creating ZIP...'}
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                            </svg>
+                            📦 Download All as ZIP ({files.length} images)
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
             </div>
 

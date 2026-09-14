@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
+import WindowDropOverlay from './WindowDropOverlay';
 
 /**
  * UploadBox — matches the homepage reference design exactly.
@@ -240,6 +241,11 @@ export default function UploadBox({
           · Max {maxSizeMB} MB
         </span>
       </div>
+
+      <WindowDropOverlay
+        onDropFiles={(rawFiles) => onDrop(multiple ? rawFiles : [rawFiles[0]])}
+        acceptedExtensions={acceptedFormats}
+      />
     </div>
   );
 }

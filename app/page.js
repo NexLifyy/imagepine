@@ -8,6 +8,7 @@ import { getMimeForSaveFormat, getExtensionForMime, compressCanvasToBlob } from 
 import { useLanguage } from '@/lib/LanguageContext';
 import SavingsPill from '@/components/SavingsPill';
 import ImageResultBar from '@/components/ImageResultBar';
+import WindowDropOverlay from '@/components/WindowDropOverlay';
 
 
 /* ─── InputField — defined OUTSIDE Home to prevent remount on every render ── */
@@ -506,6 +507,7 @@ export default function Home() {
 
   return (
     <div style={{background:'#F7F7FB',minHeight:'100%'}}>
+      <WindowDropOverlay onDropFiles={onDrop} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -746,6 +748,7 @@ export default function Home() {
                   compressedSize={processedSize}
                   dimensions={`${processedWidth} × ${processedHeight} px`}
                   label="Output"
+                  imageUrl={processedUrl}
                   onDownload={() => {
                     const a = document.createElement('a');
                     a.href = processedUrl;

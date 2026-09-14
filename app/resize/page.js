@@ -306,6 +306,8 @@ export default function ResizePage() {
                 compressedSize={resizedBlob.size}
                 dimensions={`${widthInput} × ${heightInput} px`}
                 label="Resized"
+                imageBlob={resizedBlob}
+                imageUrl={resizedPreviewUrl}
                 onDownload={downloadResizedImage}
                 downloadLabel="Download"
               />
