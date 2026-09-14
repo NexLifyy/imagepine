@@ -223,29 +223,44 @@ export default function CompressPage() {
                   Change File
                 </button>
               </div>
-              {/* Checkerboard preview */}
+              {/* Image preview */}
               <div style={{
-                minHeight: 380, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
-                background: 'repeating-conic-gradient(#F1F1F7 0% 25%, #fff 0% 50%) 0 0 / 20px 20px',
+                padding: '20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
+                background: '#F8F9FD', minHeight: 240,
               }}>
-                {compressedUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={compressedUrl} alt="Compressed Preview" style={{ maxHeight: 480, maxWidth: '100%', objectFit: 'contain', display: 'block' }} />
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={file.preview} alt="Original" style={{ maxHeight: 480, maxWidth: '100%', objectFit: 'contain', display: 'block', opacity: 0.5 }} />
-                )}
-                {isCompressing && (
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(4px)' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                      <svg style={{ animation: 'spin 0.8s linear infinite', width: 28, height: 28 }} fill="none" viewBox="0 0 24 24">
-                        <circle style={{ opacity: 0.2 }} cx="12" cy="12" r="10" stroke="#5B5BD6" strokeWidth="4" />
-                        <path style={{ opacity: 0.9 }} fill="#5B5BD6" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#5B5BD6' }}>Compressing…</span>
+                <div style={{
+                  position: 'relative',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  maxWidth: '100%',
+                  maxHeight: 480,
+                  borderRadius: 12,
+                  overflow: 'hidden',
+                  border: '1.5px solid #E4E4EF',
+                  background: '#FFFFFF',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                  lineHeight: 0,
+                }}>
+                  {compressedUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={compressedUrl} alt="Compressed Preview" style={{ maxHeight: 480, maxWidth: '100%', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' }} />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={file.preview} alt="Original" style={{ maxHeight: 480, maxWidth: '100%', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block', opacity: 0.5 }} />
+                  )}
+                  {isCompressing && (
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(4px)' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                        <svg style={{ animation: 'spin 0.8s linear infinite', width: 28, height: 28 }} fill="none" viewBox="0 0 24 24">
+                          <circle style={{ opacity: 0.2 }} cx="12" cy="12" r="10" stroke="#5B5BD6" strokeWidth="4" />
+                          <path style={{ opacity: 0.9 }} fill="#5B5BD6" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: '#5B5BD6' }}>Compressing…</span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
 

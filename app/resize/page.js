@@ -261,27 +261,42 @@ export default function ResizePage() {
 
           {/* MIDDLE COLUMN: Large Preview */}
           <div style={{ ...card, padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            {/* Checkerboard preview */}
+            {/* Preview area */}
             <div style={{
-              minHeight: 380, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
-              background: 'repeating-conic-gradient(#F1F1F7 0% 25%, #fff 0% 50%) 0 0 / 20px 20px',
+              padding: '20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
+              background: '#F8F9FD', minHeight: 240,
             }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img ref={imageRef} src={resizedUrl || selectedFile?.preview || ''}
-                alt="Preview" style={{ maxHeight: 480, maxWidth: '100%', objectFit: 'contain', display: 'block' }} />
-              {/* badges */}
-              {selectedFile && (
-                <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <span style={{ background: 'rgba(255,255,255,0.94)', border: '1px solid #E4E4EF', borderRadius: 8, padding: '4px 10px', fontSize: 10, fontWeight: 700, color: '#6B6B8A' }}>
-                    {originalWidth} × {originalHeight} px · {fmt(selectedFile.size)}
-                  </span>
-                  {resizedBlob && (
-                    <span style={{ background: 'rgba(255,255,255,0.94)', border: '1px solid #E4E4EF', borderRadius: 8, padding: '4px 10px', fontSize: 10, fontWeight: 700, color: '#111128' }}>
-                      Resized: {widthInput} × {heightInput} px
+              <div style={{
+                position: 'relative',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                maxWidth: '100%',
+                maxHeight: 480,
+                borderRadius: 12,
+                overflow: 'hidden',
+                border: '1.5px solid #E4E4EF',
+                background: '#FFFFFF',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                lineHeight: 0,
+              }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img ref={imageRef} src={resizedUrl || selectedFile?.preview || ''}
+                  alt="Preview" style={{ maxHeight: 480, maxWidth: '100%', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' }} />
+                {/* badges */}
+                {selectedFile && (
+                  <div style={{ position: 'absolute', top: 10, left: 10, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', zIndex: 2 }}>
+                    <span style={{ background: 'rgba(255,255,255,0.94)', border: '1px solid #E4E4EF', borderRadius: 8, padding: '4px 10px', fontSize: 10, fontWeight: 700, color: '#6B6B8A' }}>
+                      {originalWidth} × {originalHeight} px · {fmt(selectedFile.size)}
                     </span>
-                  )}
-                </div>
-              )}
+                    {resizedBlob && (
+                      <span style={{ background: 'rgba(255,255,255,0.94)', border: '1px solid #E4E4EF', borderRadius: 8, padding: '4px 10px', fontSize: 10, fontWeight: 700, color: '#111128' }}>
+                        Resized: {widthInput} × {heightInput} px
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Results bar below image */}

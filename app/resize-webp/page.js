@@ -375,14 +375,29 @@ export default function ResizeWebpPage() {
             {/* Middle Column: Large Preview */}
             <div className="lg:col-span-6" style={{ background: "#fff", border: "1px solid #E4E4EF", borderRadius: 20, padding: "24px", boxShadow: "0 2px 12px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column", gap: 14 }}>
               <h4 style={{ fontSize: 10, fontWeight: 800, color: "#9898B5", textTransform: "uppercase", letterSpacing: "0.08em" }}>Live Preview</h4>
-                  <div style={{ border: "1.5px solid #E4E4EF", borderRadius: 14, padding: 16, minHeight: 380, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", background: "repeating-conic-gradient(#F1F1F7 0% 25%, #fff 0% 50%) 0 0 / 16px 16px" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      ref={imageRef}
-                      src={resizedUrl || selectedFile?.preview || ''}
-                      alt="Workspace Preview"
-                      style={{ maxHeight: 480, maxWidth: "100%", objectFit: "contain", borderRadius: 8, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", display: "block" }} className=" max-w-full object-contain rounded-lg border border-bordercolor/40 shadow-sm"
-                    />
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', padding: '10px 0' }}>
+                    <div style={{
+                      position: "relative",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      maxWidth: "100%",
+                      maxHeight: 480,
+                      borderRadius: 14,
+                      overflow: "hidden",
+                      border: "1.5px solid #E4E4EF",
+                      background: "#FFFFFF",
+                      boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                      lineHeight: 0,
+                    }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        ref={imageRef}
+                        src={resizedUrl || selectedFile?.preview || ''}
+                        alt="Workspace Preview"
+                        style={{ maxHeight: 480, maxWidth: "100%", width: "auto", height: "auto", objectFit: "contain", display: "block" }}
+                      />
+                    </div>
                   </div>
                   <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                     <span>Original: {originalWidth} x {originalHeight} px</span>

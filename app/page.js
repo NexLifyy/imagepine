@@ -114,7 +114,7 @@ function InlineSlider({ beforeSrc, afterSrc, beforeLabel, afterLabel }) {
       onTouchStart={(e) => { dragging.current = true; move(e.touches[0].clientX); }}
       style={{
         position: 'relative', width: '100%', minHeight: 380,
-        background: 'repeating-conic-gradient(#F1F1F7 0% 25%, #fff 0% 50%) 0 0 / 20px 20px',
+        background: '#F8F9FD',
         borderRadius: 12, overflow: 'hidden',
         cursor: 'col-resize', userSelect: 'none',
         border: '1px solid #E4E4EF',
@@ -678,8 +678,23 @@ export default function Home() {
 
               {/* ── CANVAS VIEW (default) ── */}
               {viewMode==='canvas'&&(
-                <div style={{background:'repeating-conic-gradient(#F1F1F7 0% 25%,#fff 0% 50%) 0 0/20px 20px',borderRadius:12,minHeight:380,display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden',border:'1px solid #E4E4EF',padding:16}}>
-                  <canvas ref={previewCanvasRef} style={{maxWidth:'100%',maxHeight:500,objectFit:'contain',borderRadius:8,boxShadow:'0 4px 24px rgba(0,0,0,0.1)',display:'block'}}/>
+                <div style={{background:'#F8F9FD',borderRadius:12,padding:'20px 16px',display:'flex',alignItems:'center',justifyContent:'center',border:'1px solid #E4E4EF'}}>
+                  <div style={{
+                    position: 'relative',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    maxWidth: '100%',
+                    maxHeight: 500,
+                    borderRadius: 12,
+                    overflow: 'hidden',
+                    border: '1.5px solid #E4E4EF',
+                    background: '#FFFFFF',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+                    lineHeight: 0,
+                  }}>
+                    <canvas ref={previewCanvasRef} style={{maxWidth:'100%',maxHeight:500,objectFit:'contain',display:'block'}}/>
+                  </div>
                 </div>
               )}
 
