@@ -1,4 +1,7 @@
 export const metadata = {
+  alternates: {
+    canonical: '/compress-png',
+  },
   title: "Compress PNG Images Online for Free - ImagePine",
   description: "Compress PNG images online. Shrink files while preserving transparent backgrounds and clear details.",
 };

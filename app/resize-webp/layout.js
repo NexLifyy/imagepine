@@ -1,4 +1,7 @@
 export const metadata = {
+  alternates: {
+    canonical: '/resize-webp',
+  },
   title: "Resize WebP Images Online for Free - ImagePine",
   description: "Resize WebP images online for websites and applications to speed up page loads.",
 };

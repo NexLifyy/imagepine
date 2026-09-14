@@ -1,4 +1,7 @@
 export const metadata = {
+  alternates: {
+    canonical: '/resize',
+  },
   title: "Resize Images Online for Free - ImagePine",
   description: "Resize images online for free. Set custom widths, heights, aspect ratios, or percentage scaling.",
 };

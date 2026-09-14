@@ -1,4 +1,7 @@
 export const metadata = {
+  alternates: {
+    canonical: '/collage',
+  },
   title: "Create Photo Collages Online for Free - ImagePine",
   description: "Create beautiful photo collages online. Combine multiple photos with custom layouts, borders, and backgrounds.",
 };

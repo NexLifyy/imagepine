@@ -1,4 +1,7 @@
 export const metadata = {
+  alternates: {
+    canonical: '/gif-maker',
+  },
   title: "Create GIFs Online for Free - ImagePine",
   description: "Assemble multiple images into a high-quality animated GIF client-side. Customize delay, loop count, and layout parameters.",
 };

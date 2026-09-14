@@ -1,4 +1,7 @@
 export const metadata = {
+  alternates: {
+    canonical: '/heic-to-jpg',
+  },
   title: "Convert HEIC to JPG Online for Free - ImagePine",
   description: "Convert HEIC/HEIF photos from iPhone or iPad to standard JPEG/JPG format completely locally.",
 };

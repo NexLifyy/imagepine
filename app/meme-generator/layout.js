@@ -1,4 +1,7 @@
 export const metadata = {
+  alternates: {
+    canonical: '/meme-generator',
+  },
   title: "Create Memes Online for Free - ImagePine",
   description: "Create styled custom memes and caption your templates instantly in your browser. Add draggable captions and download high-resolution memes.",
 };

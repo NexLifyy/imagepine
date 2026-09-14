@@ -1,4 +1,7 @@
 export const metadata = {
+  alternates: {
+    canonical: '/compress',
+  },
   title: "Compress Images Online for Free - ImagePine",
   description: "Compress JPEG, PNG, and WebP images to reduce file size without losing visual quality.",
 };

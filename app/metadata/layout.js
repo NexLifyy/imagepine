@@ -1,4 +1,7 @@
 export const metadata = {
+  alternates: {
+    canonical: '/metadata',
+  },
   title: "Remove EXIF Metadata from Images Online for Free - ImagePine",
   description: "View and strip EXIF, GPS, XMP, IPTC, and other metadata from JPEG/JPG photos locally and losslessly to protect your privacy online.",
 };

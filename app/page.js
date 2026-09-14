@@ -511,10 +511,39 @@ export default function Home() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "WebSite",
-            "name": "ImagePine",
-            "alternateName": ["Image Pine"],
-            "url": "https://www.imagepine.com/"
+            "@graph": [
+              {
+                "@type": "WebSite",
+                "name": "ImagePine",
+                "alternateName": ["Image Pine"],
+                "url": "https://www.imagepine.com/"
+              },
+              {
+                "@type": "WebApplication",
+                "name": "ImagePine",
+                "url": "https://www.imagepine.com",
+                "applicationCategory": "MultimediaApplication",
+                "operatingSystem": "All",
+                "browserRequirements": "Requires JavaScript. Requires HTML5.",
+                "description": "Free online image editor. Resize, compress, rotate, flip and convert images instantly in your browser. No upload needed - 100% private.",
+                "offers": {
+                  "@type": "Offer",
+                  "price": "0",
+                  "priceCurrency": "USD"
+                }
+              },
+              {
+                "@type": "FAQPage",
+                "mainEntity": faqs.map((faq) => ({
+                  "@type": "Question",
+                  "name": faq.q,
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": faq.a
+                  }
+                }))
+              }
+            ]
           })
         }}
       />
@@ -962,12 +991,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ FOOTER ═══ */}
-      <footer style={{borderTop:'1px solid #E4E4EF',background:'#F7F7FB',padding:'32px 24px',textAlign:'center'}}>
-        <p style={{fontSize:13,color:'#9898B5',fontWeight:500,margin:0}}>
-          <span className="notranslate" style={{fontWeight:800,color:'#5B5BD6'}}>ImagePine</span> · Free browser-based image editor · No account needed · 100% private
-        </p>
-      </footer>
 
     </div>
   );

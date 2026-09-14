@@ -1,4 +1,7 @@
 export const metadata = {
+  alternates: {
+    canonical: '/svg-rasterizer',
+  },
   title: "Convert SVG to PNG & JPG Online for Free - ImagePine",
   description: "Convert vector SVG images to high-resolution PNG, JPEG, or WebP raster formats locally in your browser. Customize dimensions and scale.",
 };

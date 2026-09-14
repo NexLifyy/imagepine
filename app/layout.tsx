@@ -17,12 +17,40 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.imagepine.com"),
   applicationName: "ImagePine",
   title: "ImagePine – Resize, Compress, Convert & Edit Images Online",
   description:
     "Free online image editor. Resize, compress, rotate, flip and convert images instantly in your browser. No upload needed - 100% private.",
   keywords: "image resizer, image compressor, rotate image, flip image, free image editor online",
   manifest: "/manifest.json",
+  alternates: {
+    canonical: "https://www.imagepine.com",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://www.imagepine.com",
+    siteName: "ImagePine",
+    title: "ImagePine – Resize, Compress, Convert & Edit Images Online",
+    description:
+      "Free online image editor. Resize, compress, rotate, flip and convert images instantly in your browser. No upload needed - 100% private.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "ImagePine – Free Online Image Editor & Tools",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ImagePine – Resize, Compress, Convert & Edit Images Online",
+    description:
+      "Free online image editor. Resize, compress, rotate, flip and convert images instantly in your browser. No upload needed - 100% private.",
+    images: ["/og-image.png"],
+  },
   icons: {
     icon: [
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
@@ -34,9 +62,6 @@ export const metadata: Metadata = {
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
-  openGraph: {
-    siteName: "ImagePine",
-  },
 };
 
 export default function RootLayout({
@@ -47,6 +72,29 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Structured Data (WebApplication JSON-LD) */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              "name": "ImagePine",
+              "url": "https://www.imagepine.com",
+              "description":
+                "Free online image editor. Resize, compress, rotate, flip and convert images instantly in your browser. No upload needed - 100% private.",
+              "applicationCategory": "MultimediaApplication",
+              "operatingSystem": "All",
+              "browserRequirements": "Requires JavaScript. Requires HTML5.",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD",
+              },
+            }),
+          }}
+        />
+
         {/* PWA & Mobile Meta */}
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#7342E6" />

@@ -1,4 +1,7 @@
 export const metadata = {
+  alternates: {
+    canonical: '/compress-pdf',
+  },
   title: "Compress PDF Online for Free - ImagePine",
   description: "Reduce the file size of PDF documents while preserving text, formatting, and image resolution.",
 };

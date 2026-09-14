@@ -1,4 +1,7 @@
 export const metadata = {
+  alternates: {
+    canonical: '/image-to-pdf',
+  },
   title: "Convert Images to PDF Online for Free - ImagePine",
   description: "Convert JPG, PNG, WebP, and other images into clean, formatted PDF documents.",
 };

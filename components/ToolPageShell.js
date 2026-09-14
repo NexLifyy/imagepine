@@ -31,8 +31,47 @@ export default function ToolPageShell({
   const accentLight = accent + '18';
   const accentBorder = accent + '30';
 
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": `${title} – ImagePine`,
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "All",
+        "browserRequirements": "Requires JavaScript. Requires HTML5.",
+        "description": subtitle || seoText || `${title} online for free in your browser. 100% private.`,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+        },
+      },
+      ...(faqs && faqs.length > 0
+        ? [
+            {
+              "@type": "FAQPage",
+              "mainEntity": faqs.map((faq) => ({
+                "@type": "Question",
+                "name": faq.q,
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": faq.a,
+                },
+              })),
+            },
+          ]
+        : []),
+    ],
+  };
+
   return (
     <div style={{ background: '#F7F7FB', minHeight: '100%', fontFamily: 'var(--font-inter, Inter, sans-serif)' }}>
+      {/* ─── Structured Data (JSON-LD) ─── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+      />
 
       {/* ─── HERO ─────────────────────────────────────────────────────── */}
       <section style={{ maxWidth: 860, margin: '0 auto', padding: '52px 24px 32px', textAlign: 'center' }}>
