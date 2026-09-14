@@ -201,7 +201,7 @@ export default function HomePage() {
             </a>
 
             <Link
-              href="/resize"
+              href="/studio"
               style={{
                 background: '#FFFFFF',
                 color: '#111128',
