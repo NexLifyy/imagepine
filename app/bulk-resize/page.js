@@ -589,6 +589,7 @@ export default function BulkResizePage() {
                         originalSize={files.reduce((acc, f) => acc + (f.size || 0), 0)}
                         compressedSize={resizedFiles.reduce((acc, f) => acc + (f.blob?.size || 0), 0)}
                         size="md"
+                        showDetails={false}
                         style={{ width: '100%', justifyContent: 'center' }}
                       />
                     </div>

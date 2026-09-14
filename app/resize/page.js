@@ -7,6 +7,7 @@ import { saveHistory } from '@/lib/storage';
 import { getMimeForSaveFormat, getExtensionForMime, compressCanvasToBlob } from '@/lib/imageUtils';
 import ToolPageShell from '@/components/ToolPageShell';
 import SavingsPill from '@/components/SavingsPill';
+import ImageResultBar from '@/components/ImageResultBar';
 
 const _FEATURES = [
   { icon: (<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>), title: 'Pixel-Perfect Resize', desc: 'Set exact width and height with optional aspect-ratio lock.' },
@@ -281,12 +282,19 @@ export default function ResizePage() {
                   )}
                 </div>
               )}
-              {selectedFile && resizedBlob && (
-                <div style={{ position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
-                  <SavingsPill originalSize={selectedFile.size} compressedSize={resizedBlob.size} floating={true} />
-                </div>
-              )}
             </div>
+
+            {/* Results bar below image */}
+            {resizedBlob && selectedFile && (
+              <ImageResultBar
+                originalSize={selectedFile.size}
+                compressedSize={resizedBlob.size}
+                dimensions={`${widthInput} × ${heightInput} px`}
+                label="Resized"
+                onDownload={downloadResizedImage}
+                downloadLabel="Download"
+              />
+            )}
           </div>
 
           {/* RIGHT COLUMN: Controls & Settings */}
@@ -392,17 +400,12 @@ export default function ResizePage() {
                   )}
                 </button>
                 {resizedBlob && (
-                  <>
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                      <SavingsPill originalSize={selectedFile.size} compressedSize={resizedBlob.size} size="md" style={{ width: '100%', justifyContent: 'center' }} />
-                    </div>
-                    <button onClick={downloadResizedImage} style={successBtn}
-                      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = ''; }}>
-                      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                      Download Resized Image
-                    </button>
-                  </>
+                  <button onClick={downloadResizedImage} style={successBtn}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = ''; }}>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    Download Resized Image
+                  </button>
                 )}
               </div>
 

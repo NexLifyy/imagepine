@@ -436,7 +436,7 @@ export default function CompressPdfPage() {
 
                     {getSavingsPercentage() > 0 ? (
                       <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <SavingsPill originalSize={file.size} compressedSize={compressedBlob.size} size="md" style={{ width: '100%', justifyContent: 'center' }} />
+                        <SavingsPill originalSize={file.size} compressedSize={compressedBlob.size} size="md" showDetails={false} style={{ width: '100%', justifyContent: 'center' }} />
                       </div>
                     ) : (
                       <div className="bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-semibold rounded-lg p-2.5 mt-1 leading-relaxed">

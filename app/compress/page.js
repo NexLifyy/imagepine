@@ -6,6 +6,7 @@ import { saveAs } from 'file-saver';
 import { saveHistory } from '@/lib/storage';
 import ToolPageShell from '@/components/ToolPageShell';
 import SavingsPill from '@/components/SavingsPill';
+import ImageResultBar from '@/components/ImageResultBar';
 
 const _FEATURES = [
   { icon: (<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>), title: 'Smart Compression', desc: 'Binary search finds optimal quality to hit your exact target.' },
@@ -245,14 +246,19 @@ export default function CompressPage() {
                     </div>
                   </div>
                 )}
-                {/* Size badges */}
-                {compressedBlob && !isCompressing && (
-                  <div style={{ position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 8, alignItems: 'center', zIndex: 10 }}>
-                    <SavingsPill originalSize={file.size} compressedSize={compressedBlob.size} floating={true} />
-                  </div>
-                )}
               </div>
             </div>
+
+            {/* Results bar below image */}
+            {compressedBlob && !isCompressing && (
+              <ImageResultBar
+                originalSize={file.size}
+                compressedSize={compressedBlob.size}
+                label="Compressed"
+                onDownload={download}
+                downloadLabel="Download"
+              />
+            )}
           </div>
 
           {/* RIGHT: controls */}
@@ -301,26 +307,6 @@ export default function CompressPage() {
                     onChange={e => setQuality(parseInt(e.target.value, 10))}
                     style={{ width: '100%', accentColor: '#5B5BD6', cursor: 'pointer' }} />
                 </div>
-
-                {/* Stats */}
-                {compressedBlob && !isCompressing && (
-                  <div style={{ background: savings > 0 ? '#F0FDF4' : '#F7F7FB', border: `1px solid ${savings > 0 ? '#BBF7D0' : '#E4E4EF'}`, borderRadius: 14, padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                      <SavingsPill originalSize={file.size} compressedSize={compressedBlob.size} size="md" style={{ width: '100%', justifyContent: 'center' }} />
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, borderTop: '1px solid #E4E4EF', paddingTop: 10 }}>
-                      {[
-                        ['Original Size', fmt(file.size), '#6B6B8A'],
-                        ['Compressed Size', fmt(compressedBlob.size), '#7342E6'],
-                      ].map(([l, v, c]) => (
-                        <div key={l} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: 12, color: '#9898B5', fontWeight: 600 }}>{l}</span>
-                          <span style={{ fontSize: 12, fontWeight: 800, color: c }}>{v}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 {errorMsg && (
                   <div style={{ padding: '10px 14px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, fontSize: 12, color: '#DC2626', fontWeight: 600 }}>

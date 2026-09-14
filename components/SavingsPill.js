@@ -17,6 +17,7 @@ export default function SavingsPill({
   style = {},
   size = 'md',
   floating = false,
+  showDetails = true,
 }) {
   if (!originalSize || !compressedSize) return null;
 
@@ -91,17 +92,19 @@ export default function SavingsPill({
       </span>
 
       {/* Details: "(3.2 MB → 1.0 MB)" */}
-      <span
-        style={{
-          fontSize: isSmall ? 10 : isLarge ? 12 : 11,
-          fontWeight: 600,
-          color: '#166534',
-          opacity: 0.9,
-          whiteSpace: 'nowrap',
-        }}
-      >
-        ({origFormatted} → {compFormatted})
-      </span>
+      {showDetails && (
+        <span
+          style={{
+            fontSize: isSmall ? 10 : isLarge ? 12 : 11,
+            fontWeight: 600,
+            color: '#166534',
+            opacity: 0.9,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          ({origFormatted} → {compFormatted})
+        </span>
+      )}
     </div>
   );
 }

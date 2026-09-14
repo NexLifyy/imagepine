@@ -6,6 +6,7 @@ import { saveHistory } from '@/lib/storage';
 import { getMimeForSaveFormat, getExtensionForMime, compressCanvasToBlob } from '@/lib/imageUtils';
 import ToolPageShell from '@/components/ToolPageShell';
 import SavingsPill from '@/components/SavingsPill';
+import ImageResultBar from '@/components/ImageResultBar';
 
 const _FEATURES = [
   { icon: (<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>), title: 'Pixel-Perfect PNG', desc: 'Resize to exact dimensions with transparency preserved.' },
@@ -375,11 +376,6 @@ export default function ResizePngPage() {
             <div className="lg:col-span-6" style={{ background: "#fff", border: "1px solid #E4E4EF", borderRadius: 20, padding: "24px", boxShadow: "0 2px 12px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column", gap: 14 }}>
               <h4 style={{ fontSize: 10, fontWeight: 800, color: "#9898B5", textTransform: "uppercase", letterSpacing: "0.08em" }}>Live Preview</h4>
                   <div style={{ border: "1.5px solid #E4E4EF", borderRadius: 14, padding: 16, minHeight: 380, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", background: "repeating-conic-gradient(#F1F1F7 0% 25%, #fff 0% 50%) 0 0 / 16px 16px" }}>
-                    {resizedBlob && selectedFile && (
-                      <div style={{ position: "absolute", bottom: 14, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 8, alignItems: "center", zIndex: 10 }}>
-                        <SavingsPill originalSize={selectedFile.size} compressedSize={resizedBlob.size} floating={true} />
-                      </div>
-                    )}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       ref={imageRef}
@@ -392,6 +388,18 @@ export default function ResizePngPage() {
                     <span>Original: {originalWidth} x {originalHeight} px</span>
                     {resizedBlob && <span className="text-green-600">Resized: {widthInput} x {heightInput} px</span>}
                   </div>
+
+                  {/* Results bar below image */}
+                  {resizedBlob && selectedFile && (
+                    <ImageResultBar
+                      originalSize={selectedFile.size}
+                      compressedSize={resizedBlob.size}
+                      dimensions={`${widthInput} × ${heightInput} px`}
+                      label="Resized"
+                      onDownload={downloadResizedImage}
+                      downloadLabel="Download"
+                    />
+                  )}
             </div>
 
             {/* Right Column: Controls & Settings */}
@@ -578,21 +586,16 @@ export default function ResizePngPage() {
                     </button>
 
                     {resizedBlob && selectedFile && (
-                      <>
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                          <SavingsPill originalSize={selectedFile.size} compressedSize={resizedBlob.size} size="md" style={{ width: '100%', justifyContent: 'center' }} />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={downloadResizedImage}
-                          style={{ width: "100%", padding: "13px", fontSize: 13, fontWeight: 800, borderRadius: 12, border: "none", cursor: "pointer", background: "linear-gradient(135deg, #16A34A 0%, #15803D 100%)", color: "#fff", boxShadow: "0 4px 14px rgba(22,163,74,0.28)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all 0.18s" }}
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                          </svg>
-                          Download Resized PNG
-                        </button>
-                      </>
+                      <button
+                        type="button"
+                        onClick={downloadResizedImage}
+                        style={{ width: "100%", padding: "13px", fontSize: 13, fontWeight: 800, borderRadius: 12, border: "none", cursor: "pointer", background: "linear-gradient(135deg, #16A34A 0%, #15803D 100%)", color: "#fff", boxShadow: "0 4px 14px rgba(22,163,74,0.28)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all 0.18s" }}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download Resized PNG
+                      </button>
                     )}
                   </div>
             </div>

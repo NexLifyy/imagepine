@@ -7,6 +7,7 @@ import { saveHistory } from '@/lib/storage';
 import { getMimeForSaveFormat, getExtensionForMime, compressCanvasToBlob } from '@/lib/imageUtils';
 import { useLanguage } from '@/lib/LanguageContext';
 import SavingsPill from '@/components/SavingsPill';
+import ImageResultBar from '@/components/ImageResultBar';
 
 
 /* ─── InputField — defined OUTSIDE Home to prevent remount on every render ── */
@@ -695,25 +696,20 @@ export default function Home() {
               )}
 
               {/* Output stats */}
-              {processedSize&&(
-                <div style={{marginTop:14,display:'flex',gap:12,alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',padding:'14px 18px',background:'#F0FDF4',border:'1px solid #BBF7D0',borderRadius:12}} className="animate-fade-in">
-                  <div style={{display:'flex',alignItems:'center',gap:10}}>
-                    <div style={{width:28,height:28,background:'#22C55E',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    </div>
-                    <div>
-                      <p style={{fontSize:12,fontWeight:800,color:'#16A34A',margin:0}}>Output: {processedWidth} × {processedHeight} px · {formatSize(processedSize)}</p>
-                      <p style={{fontSize:11,color:'#4ADE80',fontWeight:600,margin:'2px 0 0'}}>Original: {formatSize(selectedFile.size)}</p>
-                    </div>
-                  </div>
-                  <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
-                    <SavingsPill originalSize={selectedFile.size} compressedSize={processedSize} size="md" />
-                    <button type="button" onClick={()=>{const a=document.createElement('a');a.href=processedUrl;a.download=selectedFile?.name.replace(/\.[^/.]+$/,''||'image')+'_edited';a.click();}}
-                      style={{background:'#22C55E',color:'#fff',fontSize:11,fontWeight:700,padding:'7px 16px',borderRadius:8,border:'none',cursor:'pointer',flexShrink:0,boxShadow:'0 2px 8px rgba(34,197,94,0.25)'}}>
-                      ↓ Save again
-                    </button>
-                  </div>
-                </div>
+              {processedSize && selectedFile && (
+                <ImageResultBar
+                  originalSize={selectedFile.size}
+                  compressedSize={processedSize}
+                  dimensions={`${processedWidth} × ${processedHeight} px`}
+                  label="Output"
+                  onDownload={() => {
+                    const a = document.createElement('a');
+                    a.href = processedUrl;
+                    a.download = (selectedFile?.name?.replace(/\.[^/.]+$/, '') || 'image') + '_edited';
+                    a.click();
+                  }}
+                  downloadLabel="Download Again"
+                />
               )}
             </div>
 
