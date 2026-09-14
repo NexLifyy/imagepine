@@ -39,7 +39,7 @@ export default function HomePage() {
   }, []);
 
   const trendingTools = useMemo(() => {
-    return toolsData.filter((t) => t.trending).slice(0, 5);
+    return toolsData.filter((t) => t.trending);
   }, []);
 
   const featuredTool = useMemo(() => {
@@ -172,7 +172,7 @@ export default function HomePage() {
               margin: '0 auto 32px',
             }}
           >
-            Powerful compression, format conversion, editing &amp; creative image utilities — all in one place, completely free &amp; 100% private in your browser.
+            Powerful compression, format conversion, editing &amp; creative image utilities all in one place, completely free &amp; 100% private in your browser.
           </p>
 
           {/* Action Buttons */}
@@ -221,7 +221,7 @@ export default function HomePage() {
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7342E6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
               </svg>
-              Instant Quick Studio
+              Image Studio
             </Link>
           </div>
 
@@ -350,7 +350,7 @@ export default function HomePage() {
                   transition: 'all 0.18s ease',
                 }}
               >
-                <span>{cat.icon}</span>
+                <ToolIcon name={cat.icon} size={15} />
                 <span>{cat.label}</span>
                 <span
                   style={{
@@ -528,51 +528,84 @@ export default function HomePage() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════════
-          4. "TRENDING TOOLS" HORIZONTAL STRIP
+          4. "TRENDING TOOLS" MOVING RIBBON
          ════════════════════════════════════════════════════════════════ */}
-      <section style={{ background: '#FFFFFF', borderTop: '1px solid #E4E4EF', borderBottom: '1px solid #E4E4EF', padding: '40px 20px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 18 }}>🔥</span>
-              <div>
-                <h3 style={{ fontSize: 16, fontWeight: 800, color: '#111128', margin: 0 }}>Trending Tools This Week</h3>
-                <p style={{ fontSize: 12, color: '#6B6B8A', margin: '2px 0 0' }}>Most popular image tools used by creators and designers</p>
-              </div>
-            </div>
-            <a href="#tools-directory" style={{ fontSize: 12, fontWeight: 800, color: '#7342E6', textDecoration: 'none' }}>
-              View All 45+ Tools →
-            </a>
-          </div>
+      <section style={{ background: '#FFFFFF', borderTop: '1px solid #E4E4EF', borderBottom: '1px solid #E4E4EF', padding: '36px 0', overflow: 'hidden' }}>
+        <style>{`
+          @keyframes ribbonScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .ribbon-track {
+            display: flex;
+            width: max-content;
+            gap: 16px;
+            animation: ribbonScroll 32s linear infinite;
+          }
+          .ribbon-track:hover {
+            animation-play-state: paused;
+          }
+        `}</style>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14 }}>
-            {trendingTools.map((t) => (
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 8, background: '#FEF3C7', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ToolIcon name="flame" size={16} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: '#111128', margin: 0 }}>Trending Tools This Week</h3>
+              <p style={{ fontSize: 12, color: '#6B6B8A', margin: '2px 0 0' }}>Most popular image tools used by creators and designers</p>
+            </div>
+          </div>
+          <a href="#tools-directory" style={{ fontSize: 12, fontWeight: 800, color: '#7342E6', textDecoration: 'none' }}>
+            View All 45+ Tools →
+          </a>
+        </div>
+
+        {/* Continuous Moving Ribbon */}
+        <div
+          style={{
+            overflow: 'hidden',
+            position: 'relative',
+            width: '100%',
+            padding: '6px 0',
+            maskImage: 'linear-gradient(to right, transparent, black 3%, black 97%, transparent)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent, black 3%, black 97%, transparent)',
+          }}
+        >
+          <div className="ribbon-track">
+            {[...trendingTools, ...trendingTools].map((t, idx) => (
               <Link
-                key={t.id}
+                key={`${t.id}-${idx}`}
                 href={t.href}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 12,
-                  padding: '12px 14px',
+                  padding: '14px 18px',
                   borderRadius: 14,
                   background: '#F8F9FD',
-                  border: '1px solid #E4E4EF',
+                  border: '1.5px solid #E4E4EF',
                   textDecoration: 'none',
                   color: 'inherit',
+                  minWidth: 230,
+                  maxWidth: 270,
+                  flexShrink: 0,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
                   transition: 'all 0.18s ease',
                 }}
-                className="hover:border-[#7342E6] hover:bg-white hover:shadow-sm"
+                className="hover:border-[#7342E6] hover:bg-white hover:shadow-md hover:-translate-y-0.5"
               >
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: '#EDE9FE', color: '#7342E6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <ToolIcon name={t.icon} size={18} />
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: '#EDE9FE', color: '#7342E6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <ToolIcon name={t.icon} size={19} />
                 </div>
-                <div style={{ minWidth: 0 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
                   <p style={{ fontSize: 13, fontWeight: 800, color: '#111128', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {t.name}
                   </p>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: '#D97706', display: 'inline-flex', alignItems: 'center', gap: 3, marginTop: 2 }}>
-                    🔥 Trending
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#D97706', display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#F59E0B' }} />
+                    Trending
                   </span>
                 </div>
               </Link>
