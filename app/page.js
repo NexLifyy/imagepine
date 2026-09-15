@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { toolsData, categories } from '@/lib/toolsData';
 import ToolIcon from '@/components/ToolIcon';
@@ -42,18 +42,35 @@ export default function HomePage() {
     return toolsData.filter((t) => t.trending);
   }, []);
 
+  const spotlightCandidates = useMemo(() => {
+    return toolsData.filter((t) => t.trending || t.featured);
+  }, []);
+
+  const [toolOfTheDay, setToolOfTheDay] = useState(() => {
+    return toolsData.find((t) => t.id === 'image-compressor') || toolsData[0];
+  });
+
+  useEffect(() => {
+    if (spotlightCandidates.length > 0) {
+      // Rotate tool every 12 hours based on current timestamp
+      const slot = Math.floor(Date.now() / (12 * 60 * 60 * 1000));
+      const idx = Math.abs(slot) % spotlightCandidates.length;
+      setToolOfTheDay(spotlightCandidates[idx]);
+    }
+  }, [spotlightCandidates]);
+
   const toggleFaq = (index) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
   };
 
   const faqs = [
     {
-      q: "Are all 45+ tools really 100% free to use?",
+      q: "Are all 40+ tools really 100% free to use?",
       a: "Yes, completely free forever. There are no paid tiers, subscription limits, file count caps, or hidden paywalls. Every tool is available without restrictions."
     },
     {
       q: "Are my photos or files uploaded to any servers?",
-      a: "No. Never. Every operation runs 100% locally inside your web browser sandbox using modern client-side WebAssembly, Canvas, and JavaScript APIs. Your private images never leave your device."
+      a: "No. Never. Every tool processes your images 100% locally in your web browser. Your private images and files never leave your device or get uploaded to any servers."
     },
     {
       q: "Do I need to create an account or sign in?",
@@ -98,7 +115,7 @@ export default function HomePage() {
                 "applicationCategory": "MultimediaApplication",
                 "operatingSystem": "All",
                 "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-                "description": "Free online suite of 45+ private image tools. Compress, convert, resize, crop, and edit images instantly in your browser."
+                "description": "Free online suite of 40+ private image tools. Compress, convert, resize, crop, and edit images instantly in your browser."
               },
               {
                 "@type": "FAQPage",
@@ -136,7 +153,7 @@ export default function HomePage() {
               color: '#111128',
             }}
           >
-            45+ Free{' '}
+            40+ Free{' '}
             <span
               style={{
                 background: 'linear-gradient(135deg, #7342E6 0%, #9061F9 50%, #5B5BD6 100%)',
@@ -262,7 +279,7 @@ export default function HomePage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search 45+ tools... (e.g. compress, convert, png to jpg, ocr, meme, qr, pdf)"
+            placeholder="Search 40+ tools... (e.g. compress, convert, png to jpg, ocr, meme, qr, pdf)"
             style={{
               flex: 1,
               border: 'none',
@@ -313,8 +330,27 @@ export default function HomePage() {
           </button>
         </div>
 
-        {/* Category Filter Pills */}
-        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 6, scrollbarWidth: 'none' }}>
+        {/* Category Filter Pills — center-aligned on PC */}
+        <style>{`
+          .category-filter-row {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+          .category-filter-row::-webkit-scrollbar {
+            display: none;
+          }
+          @media (min-width: 768px) {
+            .category-filter-row {
+              justify-content: center;
+              flex-wrap: wrap;
+            }
+          }
+        `}</style>
+        <div className="category-filter-row">
           {categories.map((cat) => {
             const isSelected = selectedCategory === cat.id;
             const count = categoryCounts[cat.id] || 0;
@@ -548,7 +584,7 @@ export default function HomePage() {
             </div>
           </div>
           <a href="#tools-directory" style={{ fontSize: 12, fontWeight: 800, color: '#7342E6', textDecoration: 'none' }}>
-            View All 45+ Tools →
+            View All 40+ Tools →
           </a>
         </div>
 
@@ -605,7 +641,100 @@ export default function HomePage() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════════
-          5. "WHY DIGITAL CREATORS CHOOSE IMAGEPINE" (VALUE PROPS)
+          5. TOOL OF THE DAY · ROTATING EVERY 12 HOURS
+         ════════════════════════════════════════════════════════════════ */}
+      <section style={{ maxWidth: 1000, margin: '0 auto', padding: '48px 20px 24px' }}>
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #FFFFFF 0%, #FAF8FF 100%)',
+            border: '2px solid #E0DBF9',
+            borderRadius: 22,
+            padding: '32px 30px',
+            boxShadow: '0 8px 32px rgba(115,66,230,0.08)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Spotlight Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 26, height: 26, borderRadius: 8, background: '#EDE9FE', color: '#7342E6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 800, color: '#7342E6', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                Tool of the Day · Spotlight
+              </span>
+            </div>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', background: '#DCFCE7', border: '1px solid #BBF7D0', padding: '3px 10px', borderRadius: 99 }}>
+              ✓ 100% Free &amp; Private
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 18,
+                background: 'linear-gradient(135deg, #7342E6 0%, #5B5BD6 100%)',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 6px 20px rgba(115,66,230,0.3)',
+                flexShrink: 0,
+              }}
+            >
+              <ToolIcon name={toolOfTheDay.icon} size={32} />
+            </div>
+
+            <div style={{ flex: 1, minWidth: 260 }}>
+              <h2 style={{ fontSize: 24, fontWeight: 900, color: '#111128', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
+                {toolOfTheDay.name}
+              </h2>
+              <p style={{ fontSize: 14, color: '#6B6B8A', lineHeight: 1.6, margin: '0 0 16px' }}>
+                {toolOfTheDay.description}
+              </p>
+
+              {/* Benefit checkmarks — simple, friendly, no technical jargon */}
+              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 12, fontWeight: 700, color: '#4E4E6D' }}>
+                <span>✓ Fast Browser Processing</span>
+                <span>✓ High-Quality Output</span>
+                <span>✓ 1-Click Instant Export</span>
+              </div>
+            </div>
+
+            <div>
+              <Link
+                href={toolOfTheDay.href}
+                style={{
+                  background: 'linear-gradient(135deg, #5B5BD6 0%, #7C3AED 100%)',
+                  color: '#FFFFFF',
+                  fontWeight: 800,
+                  fontSize: 14,
+                  padding: '14px 28px',
+                  borderRadius: 12,
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  boxShadow: '0 4px 18px rgba(91,91,214,0.35)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Launch Tool Now
+                <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════════
+          6. "WHY DIGITAL CREATORS CHOOSE IMAGEPINE" (VALUE PROPS)
          ════════════════════════════════════════════════════════════════ */}
       <section style={{ borderTop: '1px solid #E4E4EF', background: '#FFFFFF', padding: '68px 20px' }}>
         <div style={{ maxWidth: 1080, margin: '0 auto' }}>
@@ -625,8 +754,8 @@ export default function HomePage() {
             {[
               {
                 icon: (<svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>),
-                title: 'Lightning Fast Execution',
-                desc: 'Client-side WebAssembly and hardware-accelerated Canvas algorithms process your images instantly with zero server latency.'
+                title: 'Blazing Fast Processing',
+                desc: 'Your photos and documents process instantly right on your device, with zero waiting on slow server queues or upload delays.'
               },
               {
                 icon: (<svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>),
@@ -651,7 +780,7 @@ export default function HomePage() {
               {
                 icon: (<svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>),
                 title: 'All-in-One Utility Suite',
-                desc: 'Over 45+ specialized tools: compression, format conversion, vectorization, OCR text extraction, QR codes, and PDF tools.'
+                desc: 'Over 40+ specialized tools: compression, format conversion, vectorization, OCR text extraction, QR codes, and PDF tools.'
               }
             ].map((card, i) => (
               <div
