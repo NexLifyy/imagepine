@@ -93,7 +93,7 @@ export default function HomePage() {
     },
     {
       q: "Can I batch process multiple images at the same time?",
-      a: "Yes! Our core tools — including Image Compressor, Universal Image Converter, Bulk Resizer, and Bulk Renamer — support multi-file queues and 1-click 'Download All as ZIP' batch downloads."
+      a: "Yes! Our core tools, including Image Compressor, Universal Image Converter, Bulk Resizer, and Bulk Renamer, support multi-file queues and 1-click 'Download All as ZIP' batch downloads."
     },
     {
       q: "Will ImagePine put watermarks or logos on my images?",
@@ -748,22 +748,27 @@ export default function HomePage() {
             overflow: 'hidden',
           }}
         >
-          {/* Spotlight Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 26, height: 26, borderRadius: 8, background: '#EDE9FE', color: '#7342E6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-              </div>
-              <span style={{ fontSize: 11, fontWeight: 800, color: '#7342E6', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                Tool of the Day · Spotlight
+          {/* Tool of the Day Header */}
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                background: '#EDE9FE',
+                border: '1px solid #DDD6FE',
+                padding: '6px 14px',
+                borderRadius: 99,
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7342E6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span style={{ fontSize: 11.5, fontWeight: 800, color: '#7342E6', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                Tool of the Day
               </span>
             </div>
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', background: '#DCFCE7', border: '1px solid #BBF7D0', padding: '3px 10px', borderRadius: 99 }}>
-              ✓ 100% Free &amp; Private
-            </span>
           </div>
 
           <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>

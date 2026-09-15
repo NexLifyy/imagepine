@@ -213,13 +213,25 @@ export default function CropWebpPage() {
     setCropBox({ x: nextX, y: nextY, width: nextW, height: nextH });
   };
 
-  // Mouse Drag Logic
-  const handleMouseDown = (mode, e) => {
-    e.preventDefault();
+  // Helper to extract client coordinates from either Mouse or Touch events
+  const getEventCoords = (e) => {
+    if (e.touches && e.touches.length > 0) {
+      return { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
+    }
+    if (e.changedTouches && e.changedTouches.length > 0) {
+      return { clientX: e.changedTouches[0].clientX, clientY: e.changedTouches[0].clientY };
+    }
+    return { clientX: e.clientX, clientY: e.clientY };
+  };
+
+  // Drag Start Logic (Touch & Mouse)
+  const handleDragStart = (mode, e) => {
+    if (e.cancelable) e.preventDefault();
+    const coords = getEventCoords(e);
     setDragMode(mode);
     setDragStart({
-      mouseX: e.clientX,
-      mouseY: e.clientY,
+      mouseX: coords.clientX,
+      mouseY: coords.clientY,
       boxX: cropBox.x,
       boxY: cropBox.y,
       boxW: cropBox.width,
@@ -227,11 +239,14 @@ export default function CropWebpPage() {
     });
   };
 
-  const handleMouseMove = (e) => {
+  // Drag Move Logic (Touch & Mouse)
+  const handleDragMove = (e) => {
     if (!dragMode) return;
+    if (e.cancelable) e.preventDefault();
 
-    const deltaX = e.clientX - dragStart.mouseX;
-    const deltaY = e.clientY - dragStart.mouseY;
+    const coords = getEventCoords(e);
+    const deltaX = coords.clientX - dragStart.mouseX;
+    const deltaY = coords.clientY - dragStart.mouseY;
 
     if (dragMode === 'move') {
       let nextX = dragStart.boxX + deltaX;
@@ -340,19 +355,25 @@ export default function CropWebpPage() {
     }
   };
 
-  const handleMouseUp = () => {
+  const handleDragEnd = () => {
     setDragMode(null);
   };
 
-  // Global mouse listeners during active dragging
+  // Global mouse & touch listeners during active dragging
   useEffect(() => {
     if (dragMode) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('mousemove', handleDragMove);
+      window.addEventListener('mouseup', handleDragEnd);
+      window.addEventListener('touchmove', handleDragMove, { passive: false });
+      window.addEventListener('touchend', handleDragEnd);
+      window.addEventListener('touchcancel', handleDragEnd);
     }
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousemove', handleDragMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+      window.removeEventListener('touchmove', handleDragMove);
+      window.removeEventListener('touchend', handleDragEnd);
+      window.removeEventListener('touchcancel', handleDragEnd);
     };
   }, [dragMode, dragStart, imageSize, cropBox, cropAspectRatio, originalAspectRatio]);
 
@@ -574,26 +595,47 @@ export default function CropWebpPage() {
                               top: `${cropBox.y}px`,
                               width: `${cropBox.width}px`,
                               height: `${cropBox.height}px`,
+                              touchAction: 'none',
+                              userSelect: 'none',
+                              WebkitUserSelect: 'none',
                             }}
-                            onMouseDown={(e) => handleMouseDown('move', e)}
+                            onMouseDown={(e) => handleDragStart('move', e)}
+                            onTouchStart={(e) => handleDragStart('move', e)}
                           >
                             {/* Resize Corner Handles */}
                             {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map((corner) => {
                               const classes = {
-                                'top-left': 'top-0 left-0 transform -translate-x-1.5 -translate-y-1.5 cursor-nwse-resize',
-                                'top-right': 'top-0 right-0 transform translate-x-1.5 -translate-y-1.5 cursor-nesw-resize',
-                                'bottom-left': 'bottom-0 left-0 transform -translate-x-1.5 translate-y-1.5 cursor-nesw-resize',
-                                'bottom-right': 'bottom-0 right-0 transform translate-x-1.5 translate-y-1.5 cursor-nwse-resize',
+                                'top-left': 'top-0 left-0 -translate-x-1/2 -translate-y-1/2 cursor-nwse-resize',
+                                'top-right': 'top-0 right-0 translate-x-1/2 -translate-y-1/2 cursor-nesw-resize',
+                                'bottom-left': 'bottom-0 left-0 -translate-x-1/2 translate-y-1/2 cursor-nesw-resize',
+                                'bottom-right': 'bottom-0 right-0 translate-x-1/2 translate-y-1/2 cursor-nwse-resize',
                               }[corner];
                               return (
                                 <div
                                   key={corner}
-                                  className={`absolute w-3.5 h-3.5 bg-primary border border-white rounded-full shadow-md ${classes}`}
+                                  className={`absolute w-3.5 h-3.5 bg-primary border-2 border-white rounded-full shadow-md cursor-pointer ${classes}`}
+                                  style={{ touchAction: 'none' }}
                                   onMouseDown={(e) => {
                                     e.stopPropagation();
-                                    handleMouseDown(`resize-${corner}`, e);
+                                    handleDragStart(`resize-${corner}`, e);
                                   }}
-                                />
+                                  onTouchStart={(e) => {
+                                    e.stopPropagation();
+                                    handleDragStart(`resize-${corner}`, e);
+                                  }}
+                                >
+                                  {/* Expanded touch target for mobile (36px x 36px) */}
+                                  <span
+                                    style={{
+                                      position: 'absolute',
+                                      top: -11,
+                                      left: -11,
+                                      right: -11,
+                                      bottom: -11,
+                                      touchAction: 'none',
+                                    }}
+                                  />
+                                </div>
                               );
                             })}
                           </div>
