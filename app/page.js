@@ -42,10 +42,6 @@ export default function HomePage() {
     return toolsData.filter((t) => t.trending);
   }, []);
 
-  const featuredTool = useMemo(() => {
-    return toolsData.find((t) => t.featured) || toolsData[0];
-  }, []);
-
   const toggleFaq = (index) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
   };
@@ -129,14 +125,6 @@ export default function HomePage() {
         }}
       >
         <div style={{ maxWidth: 860, margin: '0 auto' }}>
-          {/* Top Pill Tag */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#EDE9FE', border: '1px solid #DDD6FE', padding: '6px 16px', borderRadius: 99, marginBottom: 20 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#7342E6' }} />
-            <span style={{ fontSize: 11, fontWeight: 800, color: '#7342E6', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              45+ Free Image Tools · No Login Required
-            </span>
-          </div>
-
           {/* Main Title */}
           <h1
             style={{
@@ -219,7 +207,9 @@ export default function HomePage() {
               }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7342E6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
               </svg>
               Image Studio
             </Link>
@@ -615,95 +605,7 @@ export default function HomePage() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════════
-          5. FEATURED TOOL SPOTLIGHT / "TOOL OF THE DAY"
-         ════════════════════════════════════════════════════════════════ */}
-      <section style={{ maxWidth: 1000, margin: '0 auto', padding: '56px 20px 32px' }}>
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #FFFFFF 0%, #FAF8FF 100%)',
-            border: '2px solid #E0DBF9',
-            borderRadius: 22,
-            padding: '36px 32px',
-            boxShadow: '0 8px 32px rgba(115,66,230,0.08)',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Spotlight Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 14 }}>⭐</span>
-              <span style={{ fontSize: 11, fontWeight: 800, color: '#7342E6', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                Tool of the Day · Spotlight
-              </span>
-            </div>
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', background: '#DCFCE7', border: '1px solid #BBF7D0', padding: '3px 10px', borderRadius: 99 }}>
-              ✓ 100% Free &amp; Private
-            </span>
-          </div>
-
-          <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
-            <div
-              style={{
-                width: 68,
-                height: 68,
-                borderRadius: 18,
-                background: 'linear-gradient(135deg, #7342E6 0%, #5B5BD6 100%)',
-                color: '#fff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 6px 20px rgba(115,66,230,0.3)',
-                flexShrink: 0,
-              }}
-            >
-              <ToolIcon name={featuredTool.icon} size={34} />
-            </div>
-
-            <div style={{ flex: 1, minWidth: 260 }}>
-              <h2 style={{ fontSize: 24, fontWeight: 900, color: '#111128', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
-                {featuredTool.name}
-              </h2>
-              <p style={{ fontSize: 14, color: '#6B6B8A', lineHeight: 1.6, margin: '0 0 16px' }}>
-                {featuredTool.description}
-              </p>
-
-              {/* Feature checkmarks */}
-              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 12, fontWeight: 700, color: '#4E4E6D' }}>
-                <span>✓ High-Quality Canvas Engine</span>
-                <span>✓ Client-Side Zero Server Lag</span>
-                <span>✓ Single-Click Export</span>
-              </div>
-            </div>
-
-            <div>
-              <Link
-                href={featuredTool.href}
-                style={{
-                  background: 'linear-gradient(135deg, #5B5BD6 0%, #7C3AED 100%)',
-                  color: '#FFFFFF',
-                  fontWeight: 800,
-                  fontSize: 14,
-                  padding: '14px 28px',
-                  borderRadius: 12,
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  boxShadow: '0 4px 18px rgba(91,91,214,0.35)',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                Launch Tool Now
-                <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════════════════
-          6. "WHY DIGITAL CREATORS CHOOSE IMAGEPINE" (VALUE PROPS)
+          5. "WHY DIGITAL CREATORS CHOOSE IMAGEPINE" (VALUE PROPS)
          ════════════════════════════════════════════════════════════════ */}
       <section style={{ borderTop: '1px solid #E4E4EF', background: '#FFFFFF', padding: '68px 20px' }}>
         <div style={{ maxWidth: 1080, margin: '0 auto' }}>
@@ -791,31 +693,7 @@ export default function HomePage() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════════
-          7. TRUST STATS STRIP
-         ════════════════════════════════════════════════════════════════ */}
-      <section style={{ background: '#F1F1F7', borderTop: '1px solid #E4E4EF', borderBottom: '1px solid #E4E4EF', padding: '24px 20px' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', justifyContent: 'space-around', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, color: '#111128' }}>
-            <span style={{ color: '#16A34A', fontSize: 16 }}>✓</span>
-            45+ Free Tools Included
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, color: '#111128' }}>
-            <span style={{ color: '#7342E6', fontSize: 16 }}>🔒</span>
-            100% On-Device Safe
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, color: '#111128' }}>
-            <span style={{ color: '#F59E0B', fontSize: 16 }}>⚡</span>
-            Zero Sign-Up Required
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, color: '#111128' }}>
-            <span style={{ color: '#5B5BD6', fontSize: 16 }}>💻</span>
-            Zero Server Uploads
-          </div>
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════════════════
-          8. SEO FAQS & ACCORDION
+          6. SEO FAQS & ACCORDION
          ════════════════════════════════════════════════════════════════ */}
       <section style={{ background: '#FFFFFF', padding: '68px 20px' }}>
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
