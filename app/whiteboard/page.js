@@ -3,15 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import ToolPageShell from '@/components/ToolPageShell';
-import "@excalidraw/excalidraw/index.css";
 
-// Dynamically load Excalidraw on client side only
-const Excalidraw = dynamic(
-  async () => (await import("@excalidraw/excalidraw")).Excalidraw,
+// Dynamically load WhiteboardCanvas on client side only
+const WhiteboardCanvas = dynamic(
+  () => import('@/components/WhiteboardCanvas'),
   {
     ssr: false,
     loading: () => (
-      <div style={{ width: '100%', height: '700px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', borderRadius: 20, border: '1.5px solid #E4E4EF' }}>
+      <div style={{ width: '100%', height: '720px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', borderRadius: 20, border: '1.5px solid #E4E4EF' }}>
         <div style={{ width: 44, height: 44, border: '4px solid #7342E6', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginBottom: 14 }}></div>
         <p style={{ fontSize: 15, fontWeight: 800, color: '#111128', margin: 0 }}>Loading Whiteboard Studio...</p>
         <p style={{ fontSize: 12, color: '#6B6B8A', marginTop: 4 }}>100% Private &amp; In-Browser Canvas</p>
@@ -73,8 +72,8 @@ const _FEATURES = [
         <polyline points="7 3 7 8 15 8" />
       </svg>
     ),
-    title: 'Save & Reopen Projects',
-    desc: 'Save editable .excalidraw project files to your computer and reload them anytime without an account.'
+    title: 'Save & Reopen Projects (.ipdraw)',
+    desc: 'Save editable .ipdraw project files to your computer and reload them anytime without an account.'
   },
   {
     icon: (
@@ -92,13 +91,13 @@ const _FEATURES = [
 const _STEPS = [
   { n: '1', title: 'Start Drawing or Drop Image', desc: 'Pick any shape from the top toolbar, or drag and drop an image onto the canvas.' },
   { n: '2', title: 'Customize & Annotate', desc: 'Adjust colors, stroke widths, fill styles, arrows, and add text captions.' },
-  { n: '3', title: 'Export & Share', desc: 'Click the top-left menu to export as crisp PNG, vector SVG, or save the editable project file.' }
+  { n: '3', title: 'Export & Share', desc: 'Save as an on-brand .ipdraw project file, or export as crisp PNG or vector SVG.' }
 ];
 
 const _FAQS = [
   {
-    q: "What is Excalidraw Whiteboard Studio?",
-    a: "Excalidraw is an open-source virtual collaborative whiteboard tool that lets you easily sketch diagrams that have a hand-drawn feel. It supports flowcharts, system architecture schemas, mind maps, user flow mockups, and quick photo annotations."
+    q: "What is ImagePine Whiteboard Studio?",
+    a: "ImagePine Whiteboard Studio is a private, in-browser visual canvas that lets you easily sketch diagrams, wireframes, and mind maps with a clean hand-drawn feel. It supports flowcharts, system architectures, UI mockups, and quick photo annotations."
   },
   {
     q: "Can I drop my own images onto the canvas to draw over them?",
@@ -110,15 +109,15 @@ const _FAQS = [
   },
   {
     q: "What export formats are supported?",
-    a: "You can export your board as high-resolution PNG (with transparent or solid background, at 1x, 2x, or 3x scale), vector SVG, or copy it directly to your clipboard for instant pasting into Slack, Notion, or documents."
+    a: "You can save your editable project as an on-brand .ipdraw file to continue editing anytime. You can also export as high-resolution PNG (with transparent or solid background, at 1x, 2x, or 3x scale), vector SVG, or copy it directly to your clipboard."
   },
   {
     q: "Can I save my work and continue editing later?",
-    a: "Yes. In the top-left hamburger menu, click 'Save to disk' to download an editable '.excalidraw' project file. Later, click 'Open' to resume editing right where you left off."
+    a: "Yes. Click 'Save (.ipdraw)' in the top menu or toolbar to download your editable project file. Later, click 'Open' to reload your canvas and resume editing right where you left off."
   },
   {
     q: "Does Whiteboard Studio support touch screens and stylus pens?",
-    a: "Yes! Excalidraw features first-class touch and pressure-sensitive stylus support on iPad, Android tablets, touch laptops, and Microsoft Surface devices."
+    a: "Yes! It features first-class touch, Apple Pencil, and pressure-sensitive stylus support on iPad, Android tablets, touch laptops, and Microsoft Surface devices."
   }
 ];
 
@@ -147,7 +146,7 @@ export default function WhiteboardPage() {
       openFaq={openFaq}
       toggleFaq={(idx) => setOpenFaq(openFaq === idx ? null : idx)}
     >
-      {/* Studio Header Toolbar */}
+      {/* Studio Header Toolbar (Normal Mode) */}
       <div style={{ maxWidth: 1200, margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#6B6B8A', fontWeight: 600 }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#EDE9FE', color: '#7342E6', padding: '4px 10px', borderRadius: 99, fontSize: 11, fontWeight: 800 }}>
@@ -209,21 +208,7 @@ export default function WhiteboardPage() {
           boxShadow: isFullScreen ? 'none' : '0 8px 30px rgba(0,0,0,0.05)',
         }}
       >
-        <Excalidraw
-          theme="light"
-          name="ImagePine-Whiteboard"
-          UIOptions={{
-            canvasActions: {
-              changeViewBackgroundColor: true,
-              clearCanvas: true,
-              export: { saveFileToDisk: true },
-              loadScene: true,
-              saveToActiveFile: false,
-              theme: true,
-              saveAsImage: true,
-            },
-          }}
-        />
+        <WhiteboardCanvas isFullScreen={isFullScreen} setIsFullScreen={setIsFullScreen} />
       </div>
     </ToolPageShell>
   );
