@@ -206,7 +206,7 @@ export default function HomePage() {
             </a>
 
             <Link
-              href="/studio"
+              href="/image-studio"
               style={{
                 background: '#FFFFFF',
                 color: '#111128',

@@ -6,6 +6,6 @@ export const metadata = {
   },
 };
 
-export default function StudioLayout({ children }) {
+export default function ImageStudioLayout({ children }) {
   return children;
 }
