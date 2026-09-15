@@ -313,23 +313,97 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════════════════════
           2. SEARCH & CATEGORY FILTER BAR
          ════════════════════════════════════════════════════════════════ */}
-      <section id="tools-directory" style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 20px 24px' }}>
+      <section id="tools-directory" className="tools-directory-section">
+        <style>{`
+          .tools-directory-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px 24px;
+          }
+          .landing-search-container {
+            background: #FFFFFF;
+            border: 1.5px solid #E4E4EF;
+            border-radius: 16px;
+            padding: 6px 8px 6px 18px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            width: 100%;
+            transition: border-color 0.2s, box-shadow 0.2s;
+          }
+          .landing-search-container:focus-within {
+            border-color: #7342E6;
+            box-shadow: 0 4px 20px rgba(115, 66, 230, 0.12);
+          }
+          .landing-search-input {
+            flex: 1;
+            min-width: 0;
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: #111128;
+            background: transparent;
+            padding: 8px 0;
+          }
+          .landing-search-btn {
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #5B5BD6 0%, #7C3AED 100%);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 10px;
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(91,91,214,0.25);
+            white-space: nowrap;
+          }
+          .category-filter-row {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+          .category-filter-row::-webkit-scrollbar {
+            display: none;
+          }
+          @media (max-width: 640px) {
+            .tools-directory-section {
+              padding: 28px 16px 20px;
+            }
+            .landing-search-container {
+              padding: 5px 6px 5px 12px;
+              gap: 8px;
+              border-radius: 14px;
+            }
+            .landing-search-input {
+              font-size: 13px;
+              padding: 6px 0;
+            }
+            .landing-search-btn {
+              padding: 8px 14px;
+              font-size: 12.5px;
+              border-radius: 9px;
+            }
+          }
+          @media (min-width: 768px) {
+            .category-filter-row {
+              justify-content: center;
+              flex-wrap: wrap;
+            }
+          }
+        `}</style>
+
         {/* Search Bar */}
-        <div
-          style={{
-            background: '#FFFFFF',
-            border: '1.5px solid #E4E4EF',
-            borderRadius: 16,
-            padding: '6px 8px 6px 18px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            marginBottom: 20,
-            transition: 'border-color 0.2s',
-          }}
-        >
-          <svg width="18" height="18" fill="none" stroke="#9898B5" strokeWidth="2.2" viewBox="0 0 24 24">
+        <div className="landing-search-container">
+          <svg width="18" height="18" fill="none" stroke="#9898B5" strokeWidth="2.2" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
@@ -338,22 +412,14 @@ export default function HomePage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={searchPlaceholder}
-            style={{
-              flex: 1,
-              border: 'none',
-              outline: 'none',
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#111128',
-              background: 'transparent',
-              padding: '8px 0',
-            }}
+            className="landing-search-input"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
               style={{
+                flexShrink: 0,
                 background: '#F1F1F7',
                 border: 'none',
                 borderRadius: '50%',
@@ -372,42 +438,11 @@ export default function HomePage() {
           )}
           <button
             type="button"
-            style={{
-              background: 'linear-gradient(135deg, #5B5BD6 0%, #7C3AED 100%)',
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: 10,
-              padding: '9px 18px',
-              fontSize: 13,
-              fontWeight: 800,
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(91,91,214,0.25)',
-            }}
+            className="landing-search-btn"
           >
             Search
           </button>
         </div>
-
-        {/* Category Filter Pills — center-aligned on PC */}
-        <style>{`
-          .category-filter-row {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 6px;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-          }
-          .category-filter-row::-webkit-scrollbar {
-            display: none;
-          }
-          @media (min-width: 768px) {
-            .category-filter-row {
-              justify-content: center;
-              flex-wrap: wrap;
-            }
-          }
-        `}</style>
         <div className="category-filter-row">
           {categories.map((cat) => {
             const isSelected = selectedCategory === cat.id;
