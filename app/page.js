@@ -492,48 +492,6 @@ export default function HomePage() {
           </button>
         </div>
 
-        {/* Popular Quick Search Tags */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 18, padding: '0 2px' }}>
-          <span style={{ fontSize: 11, fontWeight: 800, color: '#9898B5', textTransform: 'uppercase', letterSpacing: '0.04em', marginRight: 2 }}>
-            Popular:
-          </span>
-          {[
-            { label: 'Compress JPG', q: 'compress jpg' },
-            { label: 'PNG to JPG', q: 'png to jpg' },
-            { label: 'Crop Photo', q: 'crop' },
-            { label: 'HEIC to JPG', q: 'heic' },
-            { label: 'Bulk Resize', q: 'bulk resize' },
-            { label: 'OCR Text', q: 'ocr' },
-            { label: 'PDF to Image', q: 'pdf' },
-          ].map((tag) => {
-            const isActive = searchQuery.toLowerCase() === tag.q;
-            return (
-              <button
-                key={tag.label}
-                type="button"
-                onClick={() => {
-                  setSelectedCategory('all');
-                  setSearchQuery(isActive ? '' : tag.q);
-                }}
-                style={{
-                  background: isActive ? '#EDE9FE' : '#FFFFFF',
-                  border: `1.5px solid ${isActive ? '#7342E6' : '#E4E4EF'}`,
-                  borderRadius: 99,
-                  padding: '5px 12px',
-                  fontSize: 11.5,
-                  fontWeight: 600,
-                  color: isActive ? '#7342E6' : '#555577',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-                }}
-                className="hover:border-[#7342E6] hover:text-[#7342E6]"
-              >
-                {tag.label}
-              </button>
-            );
-          })}
-        </div>
 
         {/* Live Search Match Counter */}
         {searchQuery.trim() && (
@@ -1110,77 +1068,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════════════════
-          7. PRE-FOOTER ALL-IN-ONE STUDIO BANNER
-         ════════════════════════════════════════════════════════════════ */}
-      <section style={{ padding: '0 20px 64px' }}>
-        <div
-          style={{
-            maxWidth: 1080,
-            margin: '0 auto',
-            background: 'linear-gradient(135deg, #7342E6 0%, #5B5BD6 100%)',
-            borderRadius: 24,
-            padding: '44px 36px',
-            color: '#FFFFFF',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 24,
-            boxShadow: '0 12px 36px rgba(115, 66, 230, 0.22)',
-          }}
-        >
-          <div style={{ maxWidth: 620 }}>
-            <span
-              style={{
-                display: 'inline-block',
-                background: 'rgba(255, 255, 255, 0.2)',
-                fontSize: 11,
-                fontWeight: 800,
-                padding: '4px 12px',
-                borderRadius: 99,
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                marginBottom: 12,
-              }}
-            >
-              All-In-One Workspace
-            </span>
-            <h2 style={{ fontSize: 'clamp(22px, 3.5vw, 32px)', fontWeight: 900, margin: '0 0 10px', lineHeight: 1.2 }}>
-              Prefer a single editor for all your photos?
-            </h2>
-            <p style={{ fontSize: 14, opacity: 0.9, lineHeight: 1.6, margin: 0 }}>
-              Try <strong>Image Studio</strong> to compress, resize, rotate, flip, and inspect images side-by-side with a live before/after slider — completely free in your browser.
-            </p>
-          </div>
-          <div>
-            <Link
-              href="/image-studio"
-              style={{
-                background: '#FFFFFF',
-                color: '#7342E6',
-                fontWeight: 800,
-                fontSize: 14,
-                padding: '14px 28px',
-                borderRadius: 12,
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-                whiteSpace: 'nowrap',
-              }}
-              className="hover:scale-105 transition-transform"
-            >
-              Open Image Studio
-              <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      </section>
+
 
       {/* Floating Back-to-Top Button */}
       {showBackToTop && (
