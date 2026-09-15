@@ -59,6 +59,21 @@ export default function HomePage() {
     }
   }, [spotlightCandidates]);
 
+  const [searchPlaceholder, setSearchPlaceholder] = useState('Search 40+ tools...');
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (typeof window !== 'undefined' && window.innerWidth >= 640) {
+        setSearchPlaceholder('Search 40+ tools... (e.g. compress, convert, png to jpg, ocr, meme, qr, pdf)');
+      } else {
+        setSearchPlaceholder('Search 40+ tools...');
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const toggleFaq = (index) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
   };
@@ -180,71 +195,114 @@ export default function HomePage() {
             Powerful compression, format conversion, editing &amp; creative image utilities all in one place, completely free &amp; 100% private in your browser.
           </p>
 
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 28 }}>
+          {/* Action Buttons — always side-by-side, adjusts smoothly on small screens */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 10,
+              justifyContent: 'center',
+              alignItems: 'center',
+              maxWidth: 440,
+              width: '100%',
+              margin: '0 auto 28px',
+            }}
+          >
             <a
               href="#tools-directory"
               style={{
+                flex: '1 1 0',
+                minWidth: 0,
                 background: 'linear-gradient(135deg, #5B5BD6 0%, #7C3AED 100%)',
                 color: '#FFFFFF',
                 fontWeight: 800,
-                fontSize: 14,
-                padding: '13px 28px',
+                fontSize: 'clamp(12px, 3.4vw, 14px)',
+                padding: '13px 12px',
                 borderRadius: 12,
                 textDecoration: 'none',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 8,
+                justifyContent: 'center',
+                gap: 6,
                 boxShadow: '0 4px 18px rgba(91,91,214,0.32)',
                 transition: 'all 0.18s ease',
+                whiteSpace: 'nowrap',
               }}
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                 <path d="M12 5v14M19 12l-7 7-7-7" />
               </svg>
-              Explore Tools
+              <span>Explore Tools</span>
             </a>
 
             <Link
               href="/image-studio"
               style={{
+                flex: '1 1 0',
+                minWidth: 0,
                 background: '#FFFFFF',
                 color: '#111128',
                 fontWeight: 700,
-                fontSize: 14,
-                padding: '13px 24px',
+                fontSize: 'clamp(12px, 3.4vw, 14px)',
+                padding: '13px 12px',
                 borderRadius: 12,
                 border: '1.5px solid #E4E4EF',
                 textDecoration: 'none',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 8,
+                justifyContent: 'center',
+                gap: 6,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                 transition: 'all 0.18s ease',
+                whiteSpace: 'nowrap',
               }}
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7342E6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7342E6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                 <circle cx="8.5" cy="8.5" r="1.5" />
                 <polyline points="21 15 16 10 5 21" />
               </svg>
-              Image Studio
+              <span>Image Studio</span>
             </Link>
           </div>
 
-          {/* Micro Trust Badges */}
-          <div style={{ display: 'flex', gap: 18, justifyContent: 'center', flexWrap: 'wrap', fontSize: 12, fontWeight: 600, color: '#6B6B8A' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {/* Micro Trust Badges — clean column on mobile, horizontal row with dots on desktop */}
+          <style>{`
+            .hero-trust-badges {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 8px;
+              font-size: 12px;
+              font-weight: 600;
+              color: #6B6B8A;
+            }
+            .hero-trust-dot {
+              display: none;
+            }
+            @media (min-width: 640px) {
+              .hero-trust-badges {
+                flex-direction: row;
+                justify-content: center;
+                gap: 16px;
+              }
+              .hero-trust-dot {
+                display: inline;
+                color: #C4C4D9;
+              }
+            }
+          `}</style>
+          <div className="hero-trust-badges">
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <svg width="14" height="14" fill="none" stroke="#16A34A" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
               100% Private (No Uploads)
             </span>
-            <span>·</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className="hero-trust-dot">·</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <svg width="14" height="14" fill="none" stroke="#7342E6" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
               Instant Browser Processing
             </span>
-            <span>·</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className="hero-trust-dot">·</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <svg width="14" height="14" fill="none" stroke="#F59E0B" strokeWidth="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
               Forever Free &amp; Unlimited
             </span>
@@ -279,7 +337,7 @@ export default function HomePage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search 40+ tools... (e.g. compress, convert, png to jpg, ocr, meme, qr, pdf)"
+            placeholder={searchPlaceholder}
             style={{
               flex: 1,
               border: 'none',
