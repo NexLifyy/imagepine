@@ -60,6 +60,31 @@ export default function HomePage() {
   }, [spotlightCandidates]);
 
   const [searchPlaceholder, setSearchPlaceholder] = useState('Search 40+ tools...');
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target?.tagName)) return;
+      if (e.key === '/' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k')) {
+        e.preventDefault();
+        const el = document.getElementById('landing-search-input');
+        if (el) {
+          el.focus();
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -393,6 +418,25 @@ export default function HomePage() {
               border-radius: 9px;
             }
           }
+          .landing-search-kbd {
+            display: inline-flex;
+            align-items: center;
+            background: #F4F4F8;
+            border: 1px solid #DCDCE8;
+            border-radius: 6px;
+            padding: 3px 7px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #8C8CA8;
+            font-family: inherit;
+            flex-shrink: 0;
+            user-select: none;
+          }
+          @media (max-width: 640px) {
+            .landing-search-kbd {
+              display: none !important;
+            }
+          }
           @media (min-width: 768px) {
             .category-filter-row {
               justify-content: center;
@@ -408,12 +452,16 @@ export default function HomePage() {
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           <input
+            id="landing-search-input"
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={searchPlaceholder}
             className="landing-search-input"
           />
+          <kbd className="landing-search-kbd" title="Press / or Ctrl+K to search">
+            Ctrl K
+          </kbd>
           {searchQuery && (
             <button
               type="button"
@@ -443,6 +491,65 @@ export default function HomePage() {
             Search
           </button>
         </div>
+
+        {/* Popular Quick Search Tags */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 18, padding: '0 2px' }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#9898B5', textTransform: 'uppercase', letterSpacing: '0.04em', marginRight: 2 }}>
+            Popular:
+          </span>
+          {[
+            { label: 'Compress JPG', q: 'compress jpg' },
+            { label: 'PNG to JPG', q: 'png to jpg' },
+            { label: 'Crop Photo', q: 'crop' },
+            { label: 'HEIC to JPG', q: 'heic' },
+            { label: 'Bulk Resize', q: 'bulk resize' },
+            { label: 'OCR Text', q: 'ocr' },
+            { label: 'PDF to Image', q: 'pdf' },
+          ].map((tag) => {
+            const isActive = searchQuery.toLowerCase() === tag.q;
+            return (
+              <button
+                key={tag.label}
+                type="button"
+                onClick={() => {
+                  setSelectedCategory('all');
+                  setSearchQuery(isActive ? '' : tag.q);
+                }}
+                style={{
+                  background: isActive ? '#EDE9FE' : '#FFFFFF',
+                  border: `1.5px solid ${isActive ? '#7342E6' : '#E4E4EF'}`,
+                  borderRadius: 99,
+                  padding: '5px 12px',
+                  fontSize: 11.5,
+                  fontWeight: 600,
+                  color: isActive ? '#7342E6' : '#555577',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                }}
+                className="hover:border-[#7342E6] hover:text-[#7342E6]"
+              >
+                {tag.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Live Search Match Counter */}
+        {searchQuery.trim() && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18, fontSize: 13, color: '#6B6B8A', padding: '0 4px' }}>
+            <span>
+              Found <strong style={{ color: '#111128' }}>{filteredTools.length}</strong> matching {filteredTools.length === 1 ? 'tool' : 'tools'} for "{searchQuery}"
+            </span>
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              style={{ background: 'none', border: 'none', color: '#7342E6', fontWeight: 700, fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              Clear Search
+            </button>
+          </div>
+        )}
         <div className="category-filter-row">
           {categories.map((cat) => {
             const isSelected = selectedCategory === cat.id;
@@ -1002,6 +1109,110 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ════════════════════════════════════════════════════════════════
+          7. PRE-FOOTER ALL-IN-ONE STUDIO BANNER
+         ════════════════════════════════════════════════════════════════ */}
+      <section style={{ padding: '0 20px 64px' }}>
+        <div
+          style={{
+            maxWidth: 1080,
+            margin: '0 auto',
+            background: 'linear-gradient(135deg, #7342E6 0%, #5B5BD6 100%)',
+            borderRadius: 24,
+            padding: '44px 36px',
+            color: '#FFFFFF',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 24,
+            boxShadow: '0 12px 36px rgba(115, 66, 230, 0.22)',
+          }}
+        >
+          <div style={{ maxWidth: 620 }}>
+            <span
+              style={{
+                display: 'inline-block',
+                background: 'rgba(255, 255, 255, 0.2)',
+                fontSize: 11,
+                fontWeight: 800,
+                padding: '4px 12px',
+                borderRadius: 99,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                marginBottom: 12,
+              }}
+            >
+              All-In-One Workspace
+            </span>
+            <h2 style={{ fontSize: 'clamp(22px, 3.5vw, 32px)', fontWeight: 900, margin: '0 0 10px', lineHeight: 1.2 }}>
+              Prefer a single editor for all your photos?
+            </h2>
+            <p style={{ fontSize: 14, opacity: 0.9, lineHeight: 1.6, margin: 0 }}>
+              Try <strong>Image Studio</strong> to compress, resize, rotate, flip, and inspect images side-by-side with a live before/after slider — completely free in your browser.
+            </p>
+          </div>
+          <div>
+            <Link
+              href="/image-studio"
+              style={{
+                background: '#FFFFFF',
+                color: '#7342E6',
+                fontWeight: 800,
+                fontSize: 14,
+                padding: '14px 28px',
+                borderRadius: 12,
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                whiteSpace: 'nowrap',
+              }}
+              className="hover:scale-105 transition-transform"
+            >
+              Open Image Studio
+              <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Floating Back-to-Top Button */}
+      {showBackToTop && (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Back to top"
+          style={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #7342E6 0%, #5B5BD6 100%)',
+            color: '#FFFFFF',
+            border: 'none',
+            boxShadow: '0 4px 18px rgba(115, 66, 230, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            zIndex: 50,
+            transition: 'all 0.2s ease',
+          }}
+          className="hover:scale-110 active:scale-95"
+        >
+          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
